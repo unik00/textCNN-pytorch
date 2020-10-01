@@ -1,4 +1,4 @@
-**PyTorch re-implementation of Convolutional Neural Networks for Sentence Classification**  
+**Text-CNN implementation using Tensorflow 2 (mostly tf.keras though)**  
 [Yoon Kim 2014 - https://arxiv.org/pdf/1408.5882.pdf]  
 
 Word2vec pre-trained models:  
@@ -15,4 +15,5 @@ Word2vec pre-trained models:
 
 **Plan:**  
 - Gộp softmax + MSELoss thành CrossEntropyLoss  
+- Convert pytorch to tf.keras
 - Implement load checkpoints
