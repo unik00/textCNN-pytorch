@@ -1,0 +1,4 @@
+*.bin
+*.gz
+*.zip
+*/__pycache__
