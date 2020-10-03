@@ -6,18 +6,16 @@ from src.model import Net
 from src import data_helper, utils
 from configs.configuration import config
 
+
 def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
     """ Compute accuracy given model and data
-    Parameters
-    ----------
-    net : Net instance
-    word2vec_model : dict
-    original_datas : data for evaluation
+    Args:
+        net: Net instance
+        word2vec_model: dict
+        original_datas: data for evaluation
 
-    Returns
-    ----------
-    acc : float
-
+    Returns:
+        acc: float
     """
     net.eval()
     datas = original_datas.copy()
@@ -56,6 +54,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
     f1 = f1_score(y_gt, y_pred, average='macro')
     print("Acc: {} %, F1-score: {}".format(acc, f1))
     return f1
+
 
 if __name__ == "__main__":
     model = Net()

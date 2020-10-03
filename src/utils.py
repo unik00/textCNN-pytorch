@@ -7,14 +7,10 @@ import numpy as np
 
 def padded(original_arr):
 	""" Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
-	Parameters
-	----------
-	original_arr : numpy array with shape [1, x*WORD_DIM]
-		x MUST be less than or equal to SEQ_LEN.
-
-	Returns
-	----------
-	arr : padded array
+	Args:
+		original_arr : numpy array with shape [1, x*WORD_DIM], x MUST be less than or equal to SEQ_LEN.
+	Returns:
+		arr: padded array
 	"""
 	arr = original_arr.copy()
 	if arr.shape[0] == config.SEQ_LEN * config.WORD_DIM:
@@ -36,16 +32,11 @@ def padded(original_arr):
 
 def convert_and_pad(word2vec, s):
 	""" Convert a sentence to a np matrix
-	Parameters
-	----------
-	word2vec : dictionary
-		word embedding dictionary.
-	s : string
-		s MUST consist of latin characters ('a'-'z', 'A-Z') and digits (0-9) only. 
-	Returns 
-	----------
-	m : numpy array.
-	
+	Args:
+		word2vec : dictionary, word embedding dictionary.
+		s: string, MUST consist of latin characters ('a'-'z', 'A-Z') and digits (0-9) only.
+	Returns:
+		m: numpy array.
 	"""
 	m = np.array([])
 	
@@ -61,9 +52,11 @@ def convert_and_pad(word2vec, s):
 	# print(m.shape)
 	return m
 
+
 def test():
 	word2vec_model = data_helper.load_word2vec()	
 	ret = convert_and_pad(word2vec_model, "I am a king")
+
 
 if __name__ == "__main__": 
 	test()

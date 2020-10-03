@@ -3,6 +3,7 @@ from nltk import Tree
 
 en_nlp = spacy.load("en_core_web_sm")
 
+
 def to_nltk_tree(node):
     # print(node.head)
     if node.n_lefts + node.n_rights > 0:
@@ -10,23 +11,22 @@ def to_nltk_tree(node):
     else:
         return node.orth_
 
+
 def print_dependency_tree(s):
     """
-    Params
-    ----------
-    s : string
+    Params:
+        s: string
     """
     doc = en_nlp(s)
     [to_nltk_tree(sent.root).pretty_print() for sent in doc.sents]
 
+
 def find(node, s):
     """ Find first object that has text s.
-    Params
-    ----------
-    s : string
-    Returns
-    ----------
-    node : spacy node    
+    Params:
+        s: string
+    Returns:
+        node: spacy node
     """
     if node.orth_ == s:
         return node
@@ -36,20 +36,18 @@ def find(node, s):
             return t
     return None
 
+
 def dfs(u, e, trace):
     """
-    Params
-    ----------
-    u , e , cur : node 
-        u is current node
-        e is end node
-        current is the current node
-    trace : dict
-        To track visited nodes.
+    Args:
+        u, e, cur : node
+            u is current node
+            e is end node
+            current is the current node.
+        trace: a dict to track visited nodes.
     
-    Returns
-    ----------
-    s : string
+    Returns:
+        s: string
     """
     if u == e:
         return
@@ -66,18 +64,12 @@ def dfs(u, e, trace):
     
 def get_shortest_path(sentence, start, end):
     """ Find the shortest path between given pair of entities.
-    Params
-    ----------
-    sentence : str
-
-    start : str
-        start entity
-    end : str
-        end entity
-
-    Returns
-    ----------
-    path : string 
+    Args:
+        sentence: str
+        start: str, start entity
+        end: str, end entity
+    Returns:
+        path: string
     """
     if len(start.split(' ')) > 1:
         start = start.split(' ')[0]
@@ -114,7 +106,8 @@ def get_shortest_path(sentence, start, end):
         return " ".join(path)
     print("Cannot parse \"{}\", returning empty string.".format(sentence))
     return ""
-    
+
+
 if __name__ == "__main__":
     s = "They tried an assault of their own an hour later, with two columns of sixteen tanks backed by a battalion of Panzer grenadiers"
     print_dependency_tree(s)
