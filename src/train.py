@@ -59,13 +59,13 @@ def train(original_training_data, original_validate_data, net):
             #print(mini_batch[0]['original-text'])
             #print(mini_batch[0]['original-text'])
 
+            '''
             target = target.view(-1, 1) # convert to 2D as required by scatter()
-            
             target_onehot = torch.FloatTensor(config.BATCH_SIZE, config.num_class)
             target_onehot.zero_()
             target_onehot.scatter_(1, target, 1)
             target_onehot = target_onehot.view(config.BATCH_SIZE,1,config.num_class).float()
-            
+            '''
             # end of one hot coding
 
             x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
@@ -75,13 +75,15 @@ def train(original_training_data, original_validate_data, net):
 
             if config.CUDA:
                 x_batch = x_batch.cuda()
-                target_onehot = target_onehot.cuda()
+                target = target.cuda()
+
             # print(x_batch.type())
             output = net(x_batch)
             # print("output: ", output)
             # print("target_onehot: ", target_onehot)
             # print("shapes", output.shape, target_onehot.shape)
-            loss = criterion(output, target_onehot)
+
+            loss = criterion(output, target)
             loss.backward()
             optimizer.step()    # Does the update
         

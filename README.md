@@ -9,6 +9,7 @@ Word2vec pre-trained models: \
 - Train
 - Data preprocessing
 - Evaluation (untested)
+- Gộp softmax + MSELoss thành CrossEntropyLoss
 
 
 **Problems:**
@@ -16,6 +17,5 @@ Word2vec pre-trained models: \
 
 
 **Plan:**
-- Gộp softmax + MSELoss thành CrossEntropyLoss
 - Convert pytorch to tf.keras
 - Implement load checkpoints

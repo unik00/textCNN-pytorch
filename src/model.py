@@ -50,11 +50,15 @@ class Net(nn.Module):
         out = F.dropout(out, p=0.5, training=self.training)
         out = self.fc(out)
         # after fc [n][20*len(FILTER_SIZES)] -> [n][config.num_class]
-        # print(out.shape)
+        # print("output shape: ", out.shape)
         return out
 
 
 if __name__ == "__main__":
     net = Net()
     print(net)
+    loss = nn.CrossEntropyLoss()
+    input = torch.randn(3, 5, requires_grad=True)
+    target = torch.empty(3, dtype=torch.long).random_(5)
+    print(input.shape, target.shape)
     pass
