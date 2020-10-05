@@ -18,5 +18,7 @@ class Config():
 		self.BATCH_SIZE = 8
 		# if you want to train the whole batch, set this to very large number, say 10000000000
 
+		self.FINE_TUNE = False
+		self.CHECKPOINT_PATH = "checkpoints/checkpoint.pth"
 
 config = Config()

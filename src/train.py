@@ -12,13 +12,22 @@ from configs.configuration import config
 
 
 def train(original_training_data, original_validate_data, net):
+    # TODO: finish this
+    optimizer = optim.Adadelta(net.parameters(), lr=config.LEARNING_RATE)
+    criterion = nn.CrossEntropyLoss()
+
+    if config.FINE_TUNE:
+        checkpoint = torch.load(config.CHECKPOINT_PATH)
+        net.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        epoch = checkpoint['epoch']
+        loss = checkpoint['loss']
+        net.train()
+        print("Finished loading checkpoint from {}".format(config.CHECKPOINT_PATH))
+
     training_data = original_training_data.copy()
     val_data = original_validate_data.copy()
     print("Training on {} datas, validating on {} datas".format(len(training_data), len(val_data)))
-
-    # TODO: finish this 
-    optimizer = optim.Adadelta(net.parameters(), lr=config.LEARNING_RATE)
-    criterion = nn.MSELoss()
 
     word2vec_model = data_helper.load_word2vec()    
     if config.BATCH_SIZE > len(training_data):
@@ -47,8 +56,8 @@ def train(original_training_data, original_validate_data, net):
 
             # for one hot coding. TODO: make this a method in utils.py
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
-            print(mini_batch[0]['original-text'])
-            print(mini_batch[0]['original-text'])
+            #print(mini_batch[0]['original-text'])
+            #print(mini_batch[0]['original-text'])
 
             target = target.view(-1, 1) # convert to 2D as required by scatter()
             
@@ -85,11 +94,12 @@ def train(original_training_data, original_validate_data, net):
                 'net_state_dict': net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-            }, "checkpoints/checkpoint.pth")
+            }, config.CHECKPOINT_PATH)
 
 
 def main():
     training_data = data_helper.load_training_data()
+    random.seed(12)
     random.shuffle(training_data)
 
     # training_data = training_data[:800] # for debugging

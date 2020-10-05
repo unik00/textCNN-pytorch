@@ -43,12 +43,13 @@ class Net(nn.Module):
         out = torch.cat(z, dim=1)
         # print(out.shape)
 
-        out = out.view(config.BATCH_SIZE, -1, config.NUM_FILTERS * len(config.FILTER_SIZES))
-        # [n][20*len(FILTER_SIZES)][1] -> [n][1][20*len(FILTER_SIZES)], needed for nn.Linear
+        out = out.view(config.BATCH_SIZE, config.NUM_FILTERS * len(config.FILTER_SIZES))
+        # [n][20*len(FILTER_SIZES)][1] -> [n][20*len(FILTER_SIZES)], needed for nn.Linear
         # print(out.shape)
 
         out = F.dropout(out, p=0.5, training=self.training)
-        out = F.softmax(self.fc(out), dim=2) # after fc with softmax activation [n][1][20] -> [n][1][10]
+        out = self.fc(out)
+        # after fc [n][20*len(FILTER_SIZES)] -> [n][config.num_class]
         # print(out.shape)
         return out
 
