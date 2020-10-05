@@ -44,9 +44,9 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
             
             if i + j >= original_len:
                 # i + j must be less than original len to avoid duplicate
-            	continue
-            if (pred == datas[i + j]['label-id']):
-               	correct_cnt += 1
+                continue
+            if pred == datas[i + j]['label-id']:
+                correct_cnt += 1
             y_pred.append(pred)
             y_gt.append(datas[i + j]['label-id'])
 

@@ -153,14 +153,11 @@ def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_t
                 # print(edge_dict)
                 ret.append(edge_dict)
     # print("max_length: {}".format(max_length))
+    print(*ret)
     return ret
 
 
-def main():
-    training_data = load_training_data()
-    print("Total training data: {}".format(len(training_data)))
-    return
-
-
 if __name__ == "__main__":
-    main()
+    training_data = load_training_data()
+    print("Number of class: ", config.num_class)
+    print("Total training data: {}".format(len(training_data)))

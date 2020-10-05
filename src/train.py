@@ -47,7 +47,10 @@ def train(original_training_data, original_validate_data, net):
 
             # for one hot coding. TODO: make this a method in utils.py
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
-            target = target.view(-1, 1) # convert to 2D as required by scatter() 
+            print(mini_batch[0]['original-text'])
+            print(mini_batch[0]['original-text'])
+
+            target = target.view(-1, 1) # convert to 2D as required by scatter()
             
             target_onehot = torch.FloatTensor(config.BATCH_SIZE, config.num_class)
             target_onehot.zero_()
@@ -75,8 +78,8 @@ def train(original_training_data, original_validate_data, net):
         
         print("Epoch {}, loss {}".format(epoch,loss.item()))
         if epoch % 10 == 0:
-            print("Train acc {} %".format(compute_acc(word2vec_model, net, training_data)))
-            print("Validate acc {} %".format(compute_acc(word2vec_model, net, val_data)))
+            print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))
+            print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
             torch.save({
                 'epoch': epoch,
                 'net_state_dict': net.state_dict(),

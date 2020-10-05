@@ -13,9 +13,9 @@ class Config():
 		self.FILTER_SIZES = list(range(3, 11))
 		
 		self.NUM_EPOCH = 10000
-		self.LEARNING_RATE = 0.1
+		self.LEARNING_RATE = 1.
 		
-		self.BATCH_SIZE = 16
+		self.BATCH_SIZE = 1
 		# if you want to train the whole batch, set this to very large number, say 10000000000
 
 
