@@ -10,6 +10,7 @@ from src.test import compute_acc
 from src import dependency_tree
 from configs.configuration import config
 
+
 def train(original_training_data, original_validate_data, net):
     training_data = original_training_data.copy()
     val_data = original_validate_data.copy()
@@ -82,11 +83,10 @@ def train(original_training_data, original_validate_data, net):
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
             }, "checkpoints/checkpoint.pth")
-    
+
+
 def main():
     training_data = data_helper.load_training_data()
-
-
     random.shuffle(training_data)
 
     # training_data = training_data[:800] # for debugging
@@ -99,6 +99,7 @@ def main():
     train(training_data, val_data, net)
 
     return
+
 
 if __name__ == "__main__":
     main()

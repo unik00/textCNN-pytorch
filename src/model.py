@@ -1,9 +1,11 @@
+import random
+
 import torch
 import torch.nn.functional as F
-import random
+from torch import nn, optim
+
 from configs.configuration import config
 
-from torch import nn, optim
 
 class Net(nn.Module):
     def __init__(self):
@@ -21,15 +23,11 @@ class Net(nn.Module):
     
     def forward(self, x):
         """ Overiding forward method of torch.nn.Module
-        Parameters
-        ----------
-        x : torch tensor
-            shape [n, 1, SEQ_LEN * WORD_DIM], where n is batchsize.
+        Args:
+            x: torch tensor, shape [n, 1, SEQ_LEN * WORD_DIM], where n is batchsize.
         
-        Returns
-        ----------
-        out : torch tensor
-            shape [n, 1, num_class]
+        Returns:
+            out: torch tensor, shape [n, 1, num_class]
         """
         
         z = []
@@ -53,6 +51,7 @@ class Net(nn.Module):
         out = F.softmax(self.fc(out), dim=2) # after fc with softmax activation [n][1][20] -> [n][1][10]
         # print(out.shape)
         return out
+
 
 if __name__ == "__main__":
     net = Net()

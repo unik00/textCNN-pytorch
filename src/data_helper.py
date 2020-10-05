@@ -1,5 +1,6 @@
-from configs.configuration import config
 from gensim.models import KeyedVectors
+
+from configs.configuration import config
 from src import dependency_tree
 
 
@@ -18,7 +19,7 @@ def load_word2vec():
 
 def find_text_in_tag(st, tag):
     """ Find the first text between given pair of tags.
-    Params:
+    Args:
         st : string, e.g. "Hello <e1>world everybody</e1>".
         tag : tag, e.g. "e1".
     Returns:
@@ -35,14 +36,13 @@ def find_text_in_tag(st, tag):
 
 def load_label_map():
     """ Load the label map
-    Returns
-    ----------
-    ret : dict
-        e.g.
-        ret['Other'] == 0
-        ret[0] == 'Other'
-        ret['Content-Container'] == 8
-        ret[8] = 'Content-Container'
+    Returns:
+        ret: a dict
+            e.g.
+            ret['Other'] == 0
+            ret[0] == 'Other'
+            ret['Content-Container'] == 8
+            ret[8] = 'Content-Container'
     """
     ret = dict()
     num_class = 0
@@ -60,16 +60,12 @@ def load_label_map():
 
 def refined_text(text):
     """ Refine the text as required by utils.convert_and_pad().
-    Parameters
-    ----------
-    text : original text from SemeVal
-        e.g: "The <e1>child</e1> was carefully wrapped and bound into the <e2>'cradle'</e2> by means of a cord."
+    Args:
+        text: original text from SemeVal
+            e.g: "The <e1>child</e1> was carefully wrapped and bound into the <e2>'cradle'</e2> by means of a cord."
 
-    Returns
-    ----------
-    text
-        e.g: The child was carefully wrapped and bound into the cradle by means of a cord
-
+    Returns:
+        text, e.g: The child was carefully wrapped and bound into the cradle by means of a cord
     """
     text = text.replace('<e1>','')
     text = text.replace('</e1>','')
@@ -107,7 +103,6 @@ def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_t
     label_map = load_label_map()
     ret = []
 
-
     max_length = 0
     with open(data_loc, 'r') as file:
         for i, line in enumerate(file):
@@ -132,6 +127,7 @@ def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_t
                 edge_dict['num'] = num
             elif i % 4 == 1: # is label
                 text = line.strip('\n')
+                '''
                 if text != 'Other' and text[-7:] == "(e2,e1)":
                     # swap destination and source
                     edge_dict['source'],edge_dict['dest'] \
@@ -140,7 +136,8 @@ def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_t
                 if text != 'Other':
                     refined = text[:-7]
                 else:
-                    refined = text
+                '''
+                refined = text
 
                 edge_dict['label-str'] = refined
                 edge_dict['label-id'] = label_map[refined]

@@ -1,8 +1,7 @@
-from configs.configuration import config
-
-from src import data_helper
-
 import numpy as np
+
+from configs.configuration import config
+from src import data_helper
 
 
 def padded(original_arr):
