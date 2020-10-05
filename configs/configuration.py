@@ -1,6 +1,6 @@
 class Config():
 	def __init__(self):
-		self.num_class = 10
+		self.num_class = 19
 		
 		self.CUDA = False 
 
@@ -15,7 +15,7 @@ class Config():
 		self.NUM_EPOCH = 10000
 		self.LEARNING_RATE = 1.
 		
-		self.BATCH_SIZE = 1
+		self.BATCH_SIZE = 8
 		# if you want to train the whole batch, set this to very large number, say 10000000000
 
 
