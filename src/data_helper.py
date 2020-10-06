@@ -1,3 +1,4 @@
+import pickle
 from gensim.models import KeyedVectors
 
 from configs.configuration import config
@@ -9,20 +10,15 @@ def load_word2vec():
     Returns:
         model : a dict for mapping word embedding.
     """
-    print("Loading word2vec model...")
-    import pickle
-
-    def save_obj(obj, name):
-        with open('obj/' + name + '.pkl', 'wb') as f:
-            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
-
     def load_obj(name):
         with open('obj/' + name + '.pkl', 'rb') as f:
             return pickle.load(f)
 
+    print("Loading word2vec model...")
+
     # use the slim version in debugging mode for quick loading
-    # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
-    model = load_obj("word2vec_slim_added")
+    model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+    # model = load_obj("word2vec_slim_added")
     print("Finished loading")
 
     return model

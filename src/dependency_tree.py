@@ -110,5 +110,6 @@ def get_shortest_path(sentence, start, end):
 
 if __name__ == "__main__":
     s = "They tried an assault of their own an hour later, with two columns of sixteen tanks backed by a battalion of Panzer grenadiers"
+    s = "He removed the glass slide precleaned in piranha solution that was placed upright in a beaker"
     print_dependency_tree(s)
-    print(get_shortest_path(s, "battalion", "grenadiers"))
+    print(get_shortest_path(s, "slide", "beaker"))

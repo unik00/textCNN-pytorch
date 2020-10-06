@@ -3,9 +3,8 @@
 
 Word2vec pre-trained models: \
 *Google-News-all:* https://github.com/mmihaltz/word2vec-GoogleNews-vectors \
-*Google-News-slim:* https://github.com/eyaler/word2vec-slim
-*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1TMkEMdO_BMbdS1Bip5wyMFyo-0E1N4-l/view?usp=sharing
-
+*Google-News-slim:* https://github.com/eyaler/word2vec-slim \
+*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1XZ8OizYBCh3nJn9uz7vbYpuivOqcuEfM/view?usp=sharing \
 **Finished:**
 - Train
 - Data preprocessing
