@@ -10,10 +10,21 @@ def load_word2vec():
         model : a dict for mapping word embedding.
     """
     print("Loading word2vec model...")
+    import pickle
+
+    def save_obj(obj, name):
+        with open('obj/' + name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, pickle.HIGHEST_PROTOCOL)
+
+    def load_obj(name):
+        with open('obj/' + name + '.pkl', 'rb') as f:
+            return pickle.load(f)
 
     # use the slim version in debugging mode for quick loading
-    model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+    # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+    model = load_obj("word2vec_slim_added")
     print("Finished loading")
+
     return model
 
 
@@ -85,7 +96,7 @@ def refined_text(text):
 
 
 # TODO: test this method
-def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT'):
+def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT'):
     """
     Returns:
         ret: list of dictionaries
@@ -153,7 +164,7 @@ def load_training_data(data_loc = 'data/SemEval2010_task8_all_data/SemEval2010_t
                 # print(edge_dict)
                 ret.append(edge_dict)
     # print("max_length: {}".format(max_length))
-    print(*ret)
+    # print(*ret)
     return ret
 
 

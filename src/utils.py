@@ -29,6 +29,7 @@ def padded(original_arr):
 			
 	return arr
 
+
 def convert_and_pad(word2vec, s):
 	""" Convert a sentence to a np matrix
 	Args:
@@ -41,11 +42,14 @@ def convert_and_pad(word2vec, s):
 	
 	s = s.split(' ')
 	for w in s:
-		try:
+		if w in word2vec:
 			m = np.append(m, word2vec[w])
-		except:
-			# print("Skip {}".format(w))
-			pass
+			# print(word2vec[w])
+		else:
+			random_embedding = np.random.rand(config.WORD_DIM)
+			random_embedding = (random_embedding - 0.5) * 2
+			print("Added to word2vec ", w)
+			word2vec[w] = random_embedding
 	# print(m.shape)
 	m = padded(m)
 	# print(m.shape)
@@ -54,8 +58,8 @@ def convert_and_pad(word2vec, s):
 
 def test():
 	word2vec_model = data_helper.load_word2vec()	
-	ret = convert_and_pad(word2vec_model, "I am a king")
-
+	ret = convert_and_pad(word2vec_model, "I am of a king")
+	print(ret)
 
 if __name__ == "__main__": 
 	test()

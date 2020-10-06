@@ -56,17 +56,6 @@ def train(original_training_data, original_validate_data, net):
 
             # for one hot coding. TODO: make this a method in utils.py
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
-            #print(mini_batch[0]['original-text'])
-            #print(mini_batch[0]['original-text'])
-
-            '''
-            target = target.view(-1, 1) # convert to 2D as required by scatter()
-            target_onehot = torch.FloatTensor(config.BATCH_SIZE, config.num_class)
-            target_onehot.zero_()
-            target_onehot.scatter_(1, target, 1)
-            target_onehot = target_onehot.view(config.BATCH_SIZE,1,config.num_class).float()
-            '''
-            # end of one hot coding
 
             x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
             x_batch = np.asarray(x_batch)

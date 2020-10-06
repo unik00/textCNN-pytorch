@@ -64,7 +64,10 @@ if __name__ == "__main__":
     epoch = checkpoint['epoch']
     loss = checkpoint['loss']
     print(epoch, loss)
-    word2vec_model = data_helper.load_word2vec()    
+
+    word2vec_model = data_helper.load_word2vec()
+
     test_data = data_helper.load_training_data("data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT")
+
     print(compute_acc(word2vec_model, model, test_data, False))
 

@@ -4,18 +4,18 @@
 Word2vec pre-trained models: \
 *Google-News-all:* https://github.com/mmihaltz/word2vec-GoogleNews-vectors \
 *Google-News-slim:* https://github.com/eyaler/word2vec-slim
+*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1TMkEMdO_BMbdS1Bip5wyMFyo-0E1N4-l/view?usp=sharing
 
 **Finished:**
 - Train
 - Data preprocessing
 - Evaluation (untested)
 - Gộp softmax + MSELoss thành CrossEntropyLoss
-
+- Implement load checkpoints
+- Initialized unavailable keys from word2vec with random floats
 
 **Problems:**
-- Model word2vec của Google lớn nên dự kiến sẽ cross các từ mình cần dùng trên Google Collab rồi tải về, hiện giờ vẫn dùng word2vec SLIM
 
 
 **Plan:**
 - Convert pytorch to tf.keras
-- Implement load checkpoints
