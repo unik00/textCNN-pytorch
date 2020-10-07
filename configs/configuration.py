@@ -1,24 +1,28 @@
 class Config():
-	def __init__(self):
-		self.num_class = 19
-		
-		self.CUDA = False 
+    def __init__(self):
+        self.num_class = 19
 
-		self.DEBUG = True
+        self.CUDA = False
 
-		self.SEQ_LEN = 85
-		self.WORD_DIM = 300
+        self.DEBUG = True
 
-		self.NUM_FILTERS = 20
-		self.FILTER_SIZES = list(range(3, 11))
-		
-		self.NUM_EPOCH = 10000
-		self.LEARNING_RATE = 1.
-		
-		self.BATCH_SIZE = 8
-		# if you want to train the whole batch, set this to very large number, say 10000000000
+        self.SEQ_LEN = 16
+        self.WORD_DIM = 300
 
-		self.FINE_TUNE = False
-		self.CHECKPOINT_PATH = "checkpoints/checkpoint.pth"
+        self.NUM_FILTERS = 256
+        self.FILTER_SIZES = [2, 3, 4, 5]
+
+        self.NUM_EPOCH = 10000
+        self.LEARNING_RATE = 1.
+
+        self.BATCH_SIZE = 32
+        # if you want to train the whole batch, set this to very large number, say 10000000000
+
+        self.FINE_TUNE = False
+        self.CHECKPOINT_PATH = "checkpoints/checkpoint.pth"
+
+        self.TEST_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT"
+        self.TRAIN_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT"
+
 
 config = Config()

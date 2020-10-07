@@ -17,8 +17,8 @@ def load_word2vec():
     print("Loading word2vec model...")
 
     # use the slim version in debugging mode for quick loading
-    model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
-    # model = load_obj("word2vec_slim_added")
+    # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+    model = load_obj("word2vec_crossed")
     print("Finished loading")
 
     return model
@@ -165,6 +165,14 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 
 
 if __name__ == "__main__":
-    training_data = load_training_data()
+    training_data = load_training_data(config.TEST_PATH)
     print("Number of class: ", config.num_class)
     print("Total training data: {}".format(len(training_data)))
+
+    m = 0
+    for t in training_data:
+        if m < len(t['shortest-path'].split(' ')):
+            m = len(t['shortest-path'].split(' '))
+            print(t['shortest-path'].split(' '))
+            print(m)
+    print(m)

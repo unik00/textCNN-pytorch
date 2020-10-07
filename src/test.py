@@ -67,19 +67,8 @@ if __name__ == "__main__":
 
     word2vec_model = data_helper.load_word2vec()
 
-    test_data = data_helper.load_training_data("data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT")
-    test_data += data_helper.load_training_data("data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT")
-
-    for t in test_data:
-        utils.convert_and_pad(word2vec_model, t['refined-text'])
-
-    import pickle
-
-    def save_obj(obj, name):
-        with open('obj/' + name + '.pkl', 'wb') as f:
-            pickle.dump(obj, f, 3)
-
-    save_obj(word2vec_model, "word2vec_slim_added")
+    # test_data = data_helper.load_training_data(config.TRAIN_PATH)
+    test_data = data_helper.load_training_data(config.TEST_PATH)
 
     print(compute_acc(word2vec_model, model, test_data, False))
 

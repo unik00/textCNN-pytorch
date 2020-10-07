@@ -18,7 +18,7 @@ def train(original_training_data, original_validate_data, net):
 
     if config.FINE_TUNE:
         checkpoint = torch.load(config.CHECKPOINT_PATH)
-        net.load_state_dict(checkpoint['model_state_dict'])
+        net.load_state_dict(checkpoint['net_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
         loss = checkpoint['loss']
@@ -77,7 +77,7 @@ def train(original_training_data, original_validate_data, net):
             optimizer.step()    # Does the update
         
         print("Epoch {}, loss {}".format(epoch,loss.item()))
-        if epoch % 10 == 0:
+        if epoch % 5 == 0:
             print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))
             print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
             torch.save({

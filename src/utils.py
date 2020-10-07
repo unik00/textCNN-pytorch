@@ -46,10 +46,11 @@ def convert_and_pad(word2vec, s):
 			m = np.append(m, word2vec[w])
 			# print(word2vec[w])
 		else:
-			random_embedding = np.random.rand(config.WORD_DIM)
-			random_embedding = (random_embedding - 0.5) * 2
-			print("Added to word2vec ", w)
-			word2vec[w] = random_embedding
+			# random_embedding = np.random.rand(config.WORD_DIM)
+			# random_embedding = (random_embedding - 0.5) * 2
+			# print("Added to word2vec ", w)
+			# word2vec[w] = random_embedding
+			pass
 	# print(m.shape)
 	m = padded(m)
 	# print(m.shape)
