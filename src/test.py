@@ -44,7 +44,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
 
             # if we fail to parse dependency tree, we assume that the class if Other
             if not mini_batch[j]['shortest-path']:
-                pred = 0
+               pred = 0
 
             if i + j >= original_len:
                 # i + j must be less than original len to avoid duplicate

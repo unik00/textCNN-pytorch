@@ -4,6 +4,7 @@ from configs.configuration import config
 from src import data_helper
 from src.data_helper import load_label_map
 
+
 def padded(original_arr):
 	""" Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
 	Args:
@@ -42,7 +43,7 @@ def convert_and_pad(word2vec, path):
 	pos_map = load_label_map("configs/pos_map.txt")
 
 	m = np.array([])
-	print("path ", path)
+	#print("path ", path)
 	for w, pos in path:
 		if w not in word2vec:
 			continue
@@ -51,9 +52,9 @@ def convert_and_pad(word2vec, path):
 		# print(word_emb.shape)
 
 		# one-hot coding
-		pos_emb = np.zeros(config.pos_types, dtype=np.uint8)
+		pos_emb = np.zeros(config.pos_types)
 		# print("pos, posmap[pos]", pos, pos_map[pos])
-		pos_emb[pos_map[pos]] = 1
+		pos_emb[pos_map[pos]] = 1.
 		# print(pos_emb)
 		# print(pos_emb.shape)
 		#end of one hot coding
@@ -65,6 +66,7 @@ def convert_and_pad(word2vec, path):
 
 	# print(m.shape)
 	m = padded(m)
+	# print(m)
 	# print(m.shape)
 	return m
 
