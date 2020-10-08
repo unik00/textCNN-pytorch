@@ -51,6 +51,9 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
                 continue
             if pred == datas[i + j]['label-id']:
                 correct_cnt += 1
+            else:
+                print(pred, mini_batch[j]['original-text'], mini_batch[j]['shortest-path'], datas[i + j]['label-id'])
+
             y_pred.append(pred)
             y_gt.append(datas[i + j]['label-id'])
 
@@ -71,8 +74,8 @@ if __name__ == "__main__":
 
     word2vec_model = data_helper.load_word2vec()
 
-    # test_data = data_helper.load_training_data(config.TRAIN_PATH)
-    test_data = data_helper.load_training_data(config.TEST_PATH)
+    # test_data = data_helper.load_training_data(config.TEST_PATH)
+    test_data = data_helper.load_training_data(config.TRAIN_PATH)
 
     print(compute_acc(word2vec_model, model, test_data, False))
 

@@ -50,9 +50,6 @@ def train(original_training_data, original_validate_data, net):
             # then we will add some first elements of the array to the end
             training_data += training_data[:(config.BATCH_SIZE-len(training_data)%config.BATCH_SIZE)]
 
-        print("a", len(original_training_data))
-        print("b", len(training_data))
-
         avg_loss = 0
         for i in range(0, len(training_data), config.BATCH_SIZE):
             mini_batch = training_data[i:i+config.BATCH_SIZE]
@@ -78,10 +75,11 @@ def train(original_training_data, original_validate_data, net):
             loss = criterion(output, target)
             loss.backward()
             optimizer.step()    # Does the update
-            loss += loss.item()
+
+            avg_loss += loss.item()
 
         assert len(training_data) % config.BATCH_SIZE == 0
-        avg_loss /= (len(training_data) / config.BATCH_SIZE)
+        avg_loss /= len(training_data) / config.BATCH_SIZE
         print("Epoch {}, loss {}".format(epoch, avg_loss))
         if epoch % 5 == 0:
             print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))

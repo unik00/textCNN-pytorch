@@ -6,12 +6,23 @@
 *Google-News-slim:* https://github.com/eyaler/word2vec-slim \
 *Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1XZ8OizYBCh3nJn9uz7vbYpuivOqcuEfM/view?usp=sharing 
 
-<h5>Done<h5> 
-- micro-F1: 74.23629
-- macro-F1: 70.589
 
-<h5>Problems</h5>
+**Requirements** \
+*If you are financially poor like I am, and forced to use Google Collab,
+please remember to check if the versions match.
+Otherwise pretrained model will suffer from 1-2% accuracy degradation.*
+
+nltk==3.2.5 \
+spacy==2.2.4
+
+**Done** 
+After fixing version mismatch and adding POS
+- micro-F1: 74.236 -> 75.628
+- macro-F1: 70.589 -> 71.322
+
+**Problems**
 
 
-<h5>Plan</h5>
+**Plan**
+- Convert float tensor to double tensor
 - Convert pytorch to tf.keras
