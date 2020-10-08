@@ -41,30 +41,6 @@ def find_text_in_tag(st, tag):
     print("ERROR: tag \"{}\" in string \"{}\" not found!".format(tag, st))
 
 
-def load_label_map():
-    """ Load the label map
-    Returns:
-        ret: a dict
-            e.g.
-            ret['Other'] == 0
-            ret[0] == 'Other'
-            ret['Content-Container'] == 8
-            ret[8] = 'Content-Container'
-    """
-    ret = dict()
-    num_class = 0
-    with open("configs/label_map.txt") as f:
-        for line in f:
-            line = line.strip('\n')
-            index, relation = line.split(' ')
-            ret[relation] = int(index)
-            ret[int(index)] = relation
-            num_class += 1
-
-    config.num_class = num_class
-    return ret
-
-
 def refined_text(text):
     """ Refine the text as required by utils.convert_and_pad().
     Args:
@@ -91,7 +67,23 @@ def refined_text(text):
     return text
 
 
-# TODO: test this method
+def load_label_map(location):
+    """ Load the label map
+    Returns:
+        ret: a dict
+    """
+    ret = dict()
+    num_class = 0
+    with open(location) as f:
+        for line in f:
+            line = line.strip('\n')
+            index, relation = line.split(' ')
+            ret[relation] = int(index)
+            ret[int(index)] = relation
+            num_class += 1
+    return ret
+
+
 def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT'):
     """
     Returns:
@@ -107,7 +99,8 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
             'shortest-path': shortest path between e1 and e2 in dependency tree
     """
 
-    label_map = load_label_map()
+    label_map = load_label_map("configs/label_map.txt")
+
     ret = []
 
     max_length = 0
@@ -158,7 +151,11 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
             # print(edge_dict["shortest-path"])
             elif i % 4 == 2: # is comment
                 # print(edge_dict)
-                ret.append(edge_dict)
+                # We don't train datas which we cannot parse dependency
+                if not edge_dict['shortest-path']:
+                    print("Removed this data from train set because we cannot parse:\n \t{}".format(edge_dict['original-text']))
+                else:
+                    ret.append(edge_dict)
     # print("max_length: {}".format(max_length))
     # print(*ret)
     return ret

@@ -54,7 +54,6 @@ def train(original_training_data, original_validate_data, net):
             mini_batch = training_data[i:i+config.BATCH_SIZE]
             optimizer.zero_grad()
 
-            # for one hot coding. TODO: make this a method in utils.py
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
 
             x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
@@ -90,7 +89,7 @@ def train(original_training_data, original_validate_data, net):
 
 def main():
     training_data = data_helper.load_training_data()
-    random.seed(12)
+    random.seed(3948)
     random.shuffle(training_data)
 
     # training_data = training_data[:800] # for debugging

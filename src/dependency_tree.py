@@ -64,12 +64,13 @@ def dfs(u, e, trace):
     
 def get_shortest_path(sentence, start, end):
     """ Find the shortest path between given pair of entities.
+        Returns both words and POS tags
     Args:
         sentence: str
         start: str, start entity
         end: str, end entity
     Returns:
-        path: string
+        path: pair of strings (word, POS tag)
     """
     if len(start.split(' ')) > 1:
         start = start.split(' ')[0]
@@ -98,14 +99,15 @@ def get_shortest_path(sentence, start, end):
         trace = dict()
         dfs(start_node, end_node, trace)
         # print(sent, "---", start,"---", end)
-        path = [end_node.orth_]
+        path = [(end_node.orth_, end_node.pos_)]
         while end_node != start_node:
             end_node = trace[end_node]
-            path.append(end_node.orth_)
+            #print(end_node.orth_, end_node.pos_)
+            path.append((end_node.orth_, end_node.pos_))
         path = path[::-1]
-        return " ".join(path)
-    print("Cannot parse \"{}\", returning empty string.".format(sentence))
-    return ""
+        return path
+    print("Cannot parse \"{}\", returning empty array.".format(sentence))
+    return []
 
 
 if __name__ == "__main__":

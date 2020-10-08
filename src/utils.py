@@ -2,7 +2,7 @@ import numpy as np
 
 from configs.configuration import config
 from src import data_helper
-
+from src.data_helper import load_label_map
 
 def padded(original_arr):
 	""" Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
@@ -30,37 +30,52 @@ def padded(original_arr):
 	return arr
 
 
-def convert_and_pad(word2vec, s):
-	""" Convert a sentence to a np matrix
+def convert_and_pad(word2vec, path):
+	""" Convert shortest path with POS tags into a np matrix.
 	Args:
-		word2vec : dictionary, word embedding dictionary.
-		s: string, MUST consist of latin characters ('a'-'z', 'A-Z') and digits (0-9) only.
+		word2vec: a dict, word embedding dictionary.
+		path: a list of tuple (word, POS)
+			words MUST consist of latin characters ('a'-'z', 'A-Z') and digits (0-9) only.
 	Returns:
 		m: numpy array.
 	"""
+	pos_map = load_label_map("configs/pos_map.txt")
+
 	m = np.array([])
-	
-	s = s.split(' ')
-	for w in s:
-		if w in word2vec:
-			m = np.append(m, word2vec[w])
-			# print(word2vec[w])
-		else:
-			# random_embedding = np.random.rand(config.WORD_DIM)
-			# random_embedding = (random_embedding - 0.5) * 2
-			# print("Added to word2vec ", w)
-			# word2vec[w] = random_embedding
-			pass
+	print("path ", path)
+	for w, pos in path:
+		if w not in word2vec:
+			continue
+
+		word_emb = word2vec[w]
+		# print(word_emb.shape)
+
+		# one-hot coding
+		pos_emb = np.zeros(config.pos_types, dtype=np.uint8)
+		# print("pos, posmap[pos]", pos, pos_map[pos])
+		pos_emb[pos_map[pos]] = 1
+		# print(pos_emb)
+		# print(pos_emb.shape)
+		#end of one hot coding
+
+		# concatenate word embedding with POS embedding
+		embedding = np.concatenate([word_emb, pos_emb])
+		# print(embedding.shape)
+		m = np.append(m, embedding)
+
 	# print(m.shape)
 	m = padded(m)
 	# print(m.shape)
 	return m
 
 
-def test():
-	word2vec_model = data_helper.load_word2vec()	
-	ret = convert_and_pad(word2vec_model, "I am of a king")
-	print(ret)
+if __name__ == "__main__":
+	word2vec_model = data_helper.load_word2vec()
 
-if __name__ == "__main__": 
-	test()
+	test_data = data_helper.load_training_data(config.TEST_PATH)
+	# test_data += data_helper.load_training_data(config.TRAIN_PATH)
+
+	crossed = dict()
+
+	for t in test_data:
+		convert_and_pad(word2vec_model, t['shortest-path'])

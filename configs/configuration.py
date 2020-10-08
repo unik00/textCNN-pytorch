@@ -1,13 +1,14 @@
 class Config():
     def __init__(self):
         self.num_class = 19
+        self.pos_types = 15
 
         self.CUDA = False
 
         self.DEBUG = True
 
         self.SEQ_LEN = 16
-        self.WORD_DIM = 300
+        self.WORD_DIM = 300 + self.pos_types
 
         self.NUM_FILTERS = 256
         self.FILTER_SIZES = [2, 3, 4, 5]
