@@ -81,8 +81,8 @@ def train(original_training_data, original_validate_data, net):
             loss += loss.item()
 
         assert len(training_data) % config.BATCH_SIZE == 0
-        loss /= (len(training_data) / config.BATCH_SIZE)
-        print("Epoch {}, loss {}".format(epoch, loss.item()))
+        avg_loss /= (len(training_data) / config.BATCH_SIZE)
+        print("Epoch {}, loss {}".format(epoch, avg_loss))
         if epoch % 5 == 0:
             print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))
             print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
