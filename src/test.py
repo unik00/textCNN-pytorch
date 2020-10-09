@@ -30,10 +30,8 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
     y_pred = []
     for i in range(0, len(datas), config.BATCH_SIZE):
         mini_batch = datas[i:i+config.BATCH_SIZE]
-        x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
-        x_batch = np.asarray(x_batch)
-        # print("x_batch shape: ", x_batch.shape)
-        x_batch = torch.from_numpy(x_batch).double()
+        x_batch = utils.convert_to_tensor(word2vec_model, mini_batch)
+
         if use_cuda:
             output_batch = net(x_batch.cuda()).detach().cpu().numpy()
         else:

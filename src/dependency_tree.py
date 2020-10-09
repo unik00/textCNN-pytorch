@@ -62,10 +62,11 @@ def dfs(u, e, trace):
         dfs(u.head, e, trace)
 
     
-def get_shortest_path(sentence, start, end):
+def get_shortest_path(en_nlp_docs, sentence, start, end):
     """ Find the shortest path between given pair of entities.
         Returns both words and POS tags
     Args:
+        en_nlp_docs: spacy docs
         sentence: str
         start: str, start entity
         end: str, end entity
@@ -82,7 +83,7 @@ def get_shortest_path(sentence, start, end):
     if len(end.split('-')) > 1:
         end = end.split('-')[0]
 
-    doc = en_nlp(sentence)
+    doc = en_nlp_docs
     for sent in doc.sents:
         start_node = find(sent.root, start)
         end_node = find(sent.root, end)

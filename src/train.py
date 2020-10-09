@@ -57,10 +57,8 @@ def train(original_training_data, original_validate_data, net):
 
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
 
-            x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
-            x_batch = np.asarray(x_batch)
             # print("x_batch shape: ", x_batch.shape)
-            x_batch = torch.from_numpy(x_batch).double()
+            x_batch = utils.convert_to_tensor(word2vec_model, mini_batch)
 
             if config.CUDA:
                 x_batch = x_batch.cuda()
@@ -94,8 +92,8 @@ def train(original_training_data, original_validate_data, net):
 
 
 def main():
-    training_data = data_helper.load_training_data()
-    random.seed(3948)
+    training_data = data_helper.load_training_data(config.TEST_PATH)
+    random.seed(3)
     random.shuffle(training_data)
 
     # training_data = training_data[:800] # for debugging

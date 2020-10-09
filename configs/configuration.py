@@ -1,19 +1,22 @@
 class Config():
     def __init__(self):
         self.num_class = 19
-        self.pos_types = 15
+        self.pos_types = 18
 
         self.CUDA = False
 
         self.DEBUG = True
 
-        self.SEQ_LEN = 16
+        self.DEPENDENCY_TREE_LEN = 16
+        self.TEXT_LEN = 85
+        self.SEQ_LEN = self.DEPENDENCY_TREE_LEN + self.TEXT_LEN
+
         self.WORD_DIM = 300 + self.pos_types
 
         self.NUM_FILTERS = 256
         self.FILTER_SIZES = [2, 3, 4, 5]
 
-        self.NUM_EPOCH = 10000
+        self.NUM_EPOCH = 200
         self.LEARNING_RATE = 1.
 
         self.BATCH_SIZE = 32

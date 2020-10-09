@@ -21,8 +21,10 @@ for t in test_data:
         else:
             print("not found {}".format(word))
 
+
 def save_obj(obj, name):
     with open('obj/' + name + '.pkl', 'wb') as f:
         pickle.dump(obj, f, 3)
+
 
 save_obj(crossed, "word2vec_crossed")

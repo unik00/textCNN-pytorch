@@ -42,7 +42,7 @@ def find_text_in_tag(st, tag):
 
 
 def refined_text(text):
-    """ Refine the text as required by utils.convert_and_pad().
+    """ Refine the text and tagged with POS as required by utils.convert_and_pad().
     Args:
         text: original text from SemeVal
             e.g: "The <e1>child</e1> was carefully wrapped and bound into the <e2>'cradle'</e2> by means of a cord."
@@ -55,6 +55,7 @@ def refined_text(text):
     text = text.replace('<e2>','')
     text = text.replace('</e2>','')
     text = text.replace('"','')
+
     # text = text.replace(',','')
     # text = text.replace('.','')
     # text = text.replace(';','')
@@ -95,7 +96,7 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
             'label-str': original label
             'label-id': label converted to integer
             'original-text': original text containing e1 and e2
-            'refined-text': cleaned text (removed <, >,... )
+            'refined-text': cleaned text (removed <, >,... ) and tagged with POS
             'shortest-path': shortest path between e1 and e2 in dependency tree
     """
 
@@ -122,27 +123,30 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
                 edge_dict['dest'] = e2_text
 
                 text = refined_text(text)
+                en_nlp_doc = dependency_tree.en_nlp(text)
+
+                for sent in en_nlp_doc.sents:
+                    tagged_refined_text = []
+                    for w in sent:
+                        tagged_refined_text.append((w, w.pos_))
+                    break
 
                 edge_dict['refined-text'] = text
+                edge_dict['tagged-refined-text'] = tagged_refined_text
                 edge_dict['num'] = num
             elif i % 4 == 1: # is label
                 text = line.strip('\n')
-                '''
-                if text != 'Other' and text[-7:] == "(e2,e1)":
-                    # swap destination and source
-                    edge_dict['source'],edge_dict['dest'] \
-                        = edge_dict['dest'],edge_dict['source']
 
-                if text != 'Other':
-                    refined = text[:-7]
-                else:
-                '''
                 refined = text
 
                 edge_dict['label-str'] = refined
                 edge_dict['label-id'] = label_map[refined]
-                edge_dict['shortest-path'] = dependency_tree.get_shortest_path( \
-                    edge_dict["refined-text"],edge_dict["source"],edge_dict["dest"])
+                edge_dict['shortest-path'] = dependency_tree.get_shortest_path(
+                    en_nlp_doc,
+                    edge_dict["refined-text"],
+                    edge_dict["source"],
+                    edge_dict["dest"]
+                )
 
             # print("Success")
             # print(edge_dict["refined-text"])
@@ -163,19 +167,15 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 
 if __name__ == "__main__":
     model = load_word2vec()
-    print(model['by'])
-    print(model['in'])
 
-    """
+    print(model['of'])
+    '''
     training_data = load_training_data(config.TEST_PATH)
     print("Number of class: ", config.num_class)
     print("Total training data: {}".format(len(training_data)))
 
-    m = 0
     for t in training_data:
-        if m < len(t['shortest-path'].split(' ')):
-            m = len(t['shortest-path'].split(' '))
-            print(t['shortest-path'].split(' '))
-            print(m)
-    print(m)
-    """
+        print(t['original-text'])
+        print(t['refined-text'])
+        print(t['shortest-path'])
+    '''
