@@ -25,5 +25,6 @@ class Config():
         self.TEST_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT"
         self.TRAIN_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT"
 
+        self.NO_VAL_SET = True
 
 config = Config()

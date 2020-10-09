@@ -55,7 +55,7 @@ class Net(nn.Module):
 
 
 if __name__ == "__main__":
-    net = Net()
+    net = Net().double()
     print(net)
     loss = nn.CrossEntropyLoss()
     input = torch.randn(3, 5, requires_grad=True)

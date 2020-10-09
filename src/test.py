@@ -15,7 +15,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
         original_datas: data for evaluation
 
     Returns:
-        acc: float
+        acc: double
     """
     net.eval()
     datas = original_datas.copy()
@@ -33,7 +33,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
         x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
         x_batch = np.asarray(x_batch)
         # print("x_batch shape: ", x_batch.shape)
-        x_batch = torch.from_numpy(x_batch).float()
+        x_batch = torch.from_numpy(x_batch).double()
         if use_cuda:
             output_batch = net(x_batch.cuda()).detach().cpu().numpy()
         else:
@@ -65,6 +65,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
 
 if __name__ == "__main__":
     model = Net()
+    model.double()
     checkpoint = torch.load("checkpoints/checkpoint.pth", map_location=torch.device('cpu') )
     model.load_state_dict(checkpoint['net_state_dict'])
     # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
@@ -74,8 +75,8 @@ if __name__ == "__main__":
 
     word2vec_model = data_helper.load_word2vec()
 
-    # test_data = data_helper.load_training_data(config.TEST_PATH)
-    test_data = data_helper.load_training_data(config.TRAIN_PATH)
+    test_data = data_helper.load_training_data(config.TEST_PATH)
+    # test_data = data_helper.load_training_data(config.TRAIN_PATH)
 
     print(compute_acc(word2vec_model, model, test_data, False))
 

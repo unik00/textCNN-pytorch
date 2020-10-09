@@ -60,7 +60,7 @@ def train(original_training_data, original_validate_data, net):
             x_batch = [[utils.convert_and_pad(word2vec_model, d['shortest-path'])] for d in mini_batch]
             x_batch = np.asarray(x_batch)
             # print("x_batch shape: ", x_batch.shape)
-            x_batch = torch.from_numpy(x_batch).float()
+            x_batch = torch.from_numpy(x_batch).double()
 
             if config.CUDA:
                 x_batch = x_batch.cuda()
@@ -83,7 +83,8 @@ def train(original_training_data, original_validate_data, net):
         print("Epoch {}, loss {}".format(epoch, avg_loss))
         if epoch % 5 == 0:
             print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))
-            print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
+            if val_data:
+                print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
             torch.save({
                 'epoch': epoch,
                 'net_state_dict': net.state_dict(),
@@ -98,11 +99,14 @@ def main():
     random.shuffle(training_data)
 
     # training_data = training_data[:800] # for debugging
+    val_data = []
 
-    thresh = int(0.8 * len(training_data))
-    training_data, val_data = training_data[:thresh],training_data[thresh:]
+    if not config.NO_VAL_SET:
+        thresh = int(0.8 * len(training_data))
+        training_data, val_data = training_data[:thresh],training_data[thresh:]
     
     net = Net()
+    net.double()
     
     train(training_data, val_data, net)
 
