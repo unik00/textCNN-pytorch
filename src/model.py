@@ -55,7 +55,13 @@ class Net(nn.Module):
 
 
 if __name__ == "__main__":
-    net = Net().double()
+    net = Net()
+
+
+    def count_parameters(model):
+        return sum(p.numel() for p in model.parameters() if p.requires_grad)
+    print(count_parameters(net))
+
     print(net)
     loss = nn.CrossEntropyLoss()
     input = torch.randn(3, 5, requires_grad=True)

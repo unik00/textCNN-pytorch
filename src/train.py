@@ -17,7 +17,7 @@ def train(original_training_data, original_validate_data, net):
     criterion = nn.CrossEntropyLoss()
 
     if config.FINE_TUNE:
-        checkpoint = torch.load(config.CHECKPOINT_PATH)
+        checkpoint = torch.load(config.CHECKPOINT_PATH, map_location=torch.device('cuda:0'))
         net.load_state_dict(checkpoint['net_state_dict'])
         optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch']
@@ -92,7 +92,7 @@ def train(original_training_data, original_validate_data, net):
 
 
 def main():
-    training_data = data_helper.load_training_data(config.TEST_PATH)
+    training_data = data_helper.load_training_data(config.TRAIN_PATH)
     random.seed(3)
     random.shuffle(training_data)
 
@@ -104,8 +104,7 @@ def main():
         training_data, val_data = training_data[:thresh],training_data[thresh:]
     
     net = Net()
-    net.double()
-    
+
     train(training_data, val_data, net)
 
     return

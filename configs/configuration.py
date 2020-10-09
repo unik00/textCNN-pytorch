@@ -13,8 +13,8 @@ class Config():
 
         self.WORD_DIM = 300 + self.pos_types
 
-        self.NUM_FILTERS = 256
-        self.FILTER_SIZES = [2, 3, 4, 5]
+        self.NUM_FILTERS = 128
+        self.FILTER_SIZES = range(2,11)
 
         self.NUM_EPOCH = 200
         self.LEARNING_RATE = 1.

@@ -63,7 +63,6 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
 
 if __name__ == "__main__":
     model = Net()
-    model.double()
     checkpoint = torch.load("checkpoints/checkpoint.pth", map_location=torch.device('cpu') )
     model.load_state_dict(checkpoint['net_state_dict'])
     # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])

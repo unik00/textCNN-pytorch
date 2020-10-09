@@ -19,13 +19,12 @@ Otherwise pretrained model will suffer from 1-2% accuracy degradation.*
     
 #####Done 
 After fixing version mismatch and adding POS
-- micro-F1: 74.236 -> 75.628
-- macro-F1: 70.589 -> 71.322
+- micro-F1: 74.236 -> 75.295
+- macro-F1: 70.589 -> 71.447
 
 #####Problems
-- shortest path only doesn't give all meaning
 
 #####Plan
-- put the whole setenece, concatenate with shortest-path
+- 5-fold validation
 - Convert float tensor to double tensor
 - Convert pytorch to tf.keras

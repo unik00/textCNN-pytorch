@@ -168,7 +168,7 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 if __name__ == "__main__":
     model = load_word2vec()
 
-    print(model['of'])
+    print(model['thrown'])
     '''
     training_data = load_training_data(config.TEST_PATH)
     print("Number of class: ", config.num_class)
