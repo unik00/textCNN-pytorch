@@ -68,7 +68,7 @@ def refined_text(text):
     return text
 
 
-def load_label_map(location):
+def load_label_map(location="configs/label_map.txt"):
     """ Load the label map
     Returns:
         ret: a dict
@@ -156,8 +156,8 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
             elif i % 4 == 2: # is comment
                 # print(edge_dict)
                 # We don't train datas which we cannot parse dependency
-                if not edge_dict['shortest-path']:
-                    print("Removed this data from train set because we cannot parse:\n \t{}".format(edge_dict['original-text']))
+                if data_loc == config.TRAIN_PATH and not edge_dict['shortest-path']:
+                     print("Removed this data from train set because we cannot parse:\n \t{}".format(edge_dict['original-text']))
                 else:
                     ret.append(edge_dict)
     # print("max_length: {}".format(max_length))
