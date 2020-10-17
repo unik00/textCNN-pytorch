@@ -11,11 +11,11 @@ from src import dependency_tree
 from configs.configuration import config
 
 
-def train(original_training_data, original_validate_data, net):
-    # TODO: finish this
+def train(original_training_data, original_validate_data, net, save_name):
     optimizer = optim.Adadelta(net.parameters(), lr=config.LEARNING_RATE)
     criterion = nn.CrossEntropyLoss()
 
+    '''
     if config.FINE_TUNE:
         checkpoint = torch.load(config.CHECKPOINT_PATH, map_location=torch.device('cuda:0'))
         net.load_state_dict(checkpoint['net_state_dict'])
@@ -24,6 +24,7 @@ def train(original_training_data, original_validate_data, net):
         loss = checkpoint['loss']
         net.train()
         print("Finished loading checkpoint from {}".format(config.CHECKPOINT_PATH))
+    '''
 
     training_data = original_training_data.copy()
     val_data = original_validate_data.copy()
@@ -37,6 +38,8 @@ def train(original_training_data, original_validate_data, net):
 
     if config.CUDA:
         net.cuda()
+
+    final_f1_on_val = 0
 
     for epoch in range(config.NUM_EPOCH):
         if not net.training:
@@ -64,11 +67,7 @@ def train(original_training_data, original_validate_data, net):
                 x_batch = x_batch.cuda()
                 target = target.cuda()
 
-            # print(x_batch.type())
             output = net(x_batch)
-            # print("output: ", output)
-            # print("target_onehot: ", target_onehot)
-            # print("shapes", output.shape, target_onehot.shape)
 
             loss = criterion(output, target)
             loss.backward()
@@ -78,17 +77,19 @@ def train(original_training_data, original_validate_data, net):
 
         assert len(training_data) % config.BATCH_SIZE == 0
         avg_loss /= len(training_data) / config.BATCH_SIZE
-        print("Epoch {}, loss {}".format(epoch, avg_loss))
-        if epoch % 5 == 0:
+        print("Epoch {}, loss {}".format(epoch+1, avg_loss))
+        if epoch % 5 == 0 or epoch == config.NUM_EPOCH - 1:
             print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, training_data)*100))
             if val_data:
-                print("Validate acc {:.3f}".format(compute_acc(word2vec_model, net, val_data)*100))
+                final_f1_on_val = compute_acc(word2vec_model, net, val_data)*100
+                print("Validate acc {:.3f}".format(final_f1_on_val))
             torch.save({
                 'epoch': epoch,
                 'net_state_dict': net.state_dict(),
                 'optimizer_state_dict': optimizer.state_dict(),
                 'loss': loss,
-            }, config.CHECKPOINT_PATH)
+            }, save_name)
+    return final_f1_on_val
 
 
 def main():
@@ -96,18 +97,24 @@ def main():
     random.seed(3)
     random.shuffle(training_data)
 
-    # training_data = training_data[:800] # for debugging
-    val_data = []
+    if not config.NO_VAL_SET: # if not training the whole dataset, then do K-fold CV
+        thresh = int(0.2 * len(training_data))
+        cv_score = 0
+        for i in range(5):
+            print("Fold {}/{}".format(i+1, 5))
+            left = i * thresh
+            right = (i+1) * thresh
+            print("Left: {}, Right: {}".format(left, right))
 
-    if not config.NO_VAL_SET:
-        thresh = int(0.8 * len(training_data))
-        training_data, val_data = training_data[:thresh],training_data[thresh:]
-    
-    net = Net()
-
-    train(training_data, val_data, net)
-
-    return
+            cv_score += train(training_data[:left]+training_data[right:],
+                              training_data[left:right],
+                              Net(),
+                              config.CHECKPOINT_PATH + ".fold{}".format(i+1))
+        cv_score /= 5
+        print("Final CV score: {}".format(cv_score))
+    else:
+        val_data = []
+        train(training_data, val_data, Net(), config.CHECKPOINT_PATH)
 
 
 if __name__ == "__main__":

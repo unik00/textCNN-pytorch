@@ -11,17 +11,18 @@ def convert_to_tensor(word2vec_model, mini_batch):
 	shortest_path_padded = [[utils.convert_and_pad(word2vec_model, d['shortest-path'], config.DEPENDENCY_TREE_LEN)] for
 							d in mini_batch]
 	shortest_path_padded = np.asarray(shortest_path_padded)
-#	print(shortest_path_padded.shape)
+	# print(shortest_path_padded.shape)
 
+	'''
 	sentence_padded = [[utils.convert_and_pad(word2vec_model, d['tagged-refined-text'], config.TEXT_LEN)] for d in mini_batch]
 	sentence_padded = np.asarray(sentence_padded)
-#	print(sentence_padded.shape)
+	# print(sentence_padded.shape)
 
 	x_batch = np.concatenate([shortest_path_padded, sentence_padded], axis=2)
-
+	'''
+	x_batch = shortest_path_padded
 	x_batch = np.asarray(x_batch)
-
-#	print("x_batch shape: ", x_batch.shape)
+	# print("x_batch shape: ", x_batch.shape)
 	x_batch = torch.from_numpy(x_batch).float()
 	return x_batch
 

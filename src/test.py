@@ -1,3 +1,4 @@
+import subprocess
 import torch
 import numpy as np
 from sklearn.metrics import f1_score
@@ -29,6 +30,10 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
 
     y_gt = []
     y_pred = []
+
+    temporary_file = open("data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/temporary_file.txt", "w")
+    # key_file = open("data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/TEST_FILE_KEY.TXT", "r")
+
     for i in range(0, len(datas), config.BATCH_SIZE):
         mini_batch = datas[i:i+config.BATCH_SIZE]
         x_batch = utils.convert_to_tensor(word2vec_model, mini_batch)
@@ -46,7 +51,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
                 pred = 0
 
             if i + j >= original_len:
-                print(i + j, original_len)
+                # print(i + j, original_len)
                 # i + j must be less than original len to avoid duplicate
                 continue
             if pred == datas[i + j]['label-id']:
@@ -54,17 +59,24 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
             else:
                 # print(pred, mini_batch[j]['original-text'], mini_batch[j]['shortest-path'], datas[i + j]['label-id'])
                 pass
-            if mini_batch[j]['shortest-path']:
-                print(mini_batch[j]['num'].strip(' '), '\t', label_map[pred].strip(' '))
-            # print(mini_batch[j]['num'].strip(' '), '\t', mini_batch[j]['label-str'].strip(' '))
+            # if mini_batch[j]['shortest-path']:
+            temporary_file.write(mini_batch[j]['num'].strip(' ') + '\t' + label_map[pred].strip(' ')+'\n')
 
             y_pred.append(pred)
             y_gt.append(datas[i + j]['label-id'])
 
+    temporary_file.close()
+    scorer = 'data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/semeval2010_task8_scorer-v1.2.pl'
+    temporary_file_path = 'data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/temporary_file.txt'
+    test_file_key_path = 'data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/TEST_FILE_KEY.TXT'
+    official_result_lines = subprocess.check_output(["perl", scorer, temporary_file_path, test_file_key_path])
+    official_result_lines = official_result_lines.decode('utf-8').split('\n')
+    official_score = float(official_result_lines[-2][-10:-5])
+    # print(official_score)
+    # print(official_result_lines)
     acc = 1.0*correct_cnt / original_len * 100
-    f1 = f1_score(y_gt, y_pred, average=None)
-    print("Acc: {} %, F1-score: {}".format(acc, f1))
-    return f1
+    print("Accuracy: {:.2f}, F1-score: {:.2f}".format(acc, official_score))
+    return official_score
 
 
 if __name__ == "__main__":
