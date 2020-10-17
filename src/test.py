@@ -65,6 +65,8 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
             y_pred.append(pred)
             y_gt.append(datas[i + j]['label-id'])
 
+    '''TODO: finish for validate '''
+    
     temporary_file.close()
     scorer = 'data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/semeval2010_task8_scorer-v1.2.pl'
     temporary_file_path = 'data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/temporary_file.txt'
