@@ -75,7 +75,7 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
     official_result_lines = official_result_lines.decode('utf-8').split('\n')
     official_score = float(official_result_lines[-2][-10:-5])
     # print(official_score)
-    # print(official_result_lines)
+    print(official_result_lines)
     acc = 1.0*correct_cnt / original_len * 100
     print("Accuracy: {:.2f}, official F1-score: {:.2f}".format(acc, official_score))
     return official_score

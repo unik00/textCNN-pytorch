@@ -79,9 +79,9 @@ def train(original_training_data, original_validate_data, net, save_name):
         avg_loss /= len(training_data) / config.BATCH_SIZE
         print("Epoch {}, loss {}".format(epoch+1, avg_loss))
         if epoch % 5 == 0 or epoch == config.NUM_EPOCH - 1:
-            print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, original_training_data)*100))
+            print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, original_training_data)))
             if val_data:
-                final_f1_on_val = compute_acc(word2vec_model, net, original_validate_data)*100
+                final_f1_on_val = compute_acc(word2vec_model, net, original_validate_data)
                 print("Validate acc {:.3f}".format(final_f1_on_val))
             torch.save({
                 'epoch': epoch,
