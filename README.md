@@ -2,9 +2,10 @@
 For semantic relation extraction
 
 <h5>Word2vec pre-trained models</h5>
-*Google-News-all:* https://github.com/mmihaltz/word2vec-GoogleNews-vectors  
-*Google-News-slim:* https://github.com/eyaler/word2vec-slim  
-*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1XZ8OizYBCh3nJn9uz7vbYpuivOqcuEfM/view?usp=sharing 
+
+*Google-News-all:* https://github.com/mmihaltz/word2vec-GoogleNews-vectors \
+*Google-News-slim:* https://github.com/eyaler/word2vec-slim \
+*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1XZ8OizYBCh3nJn9uz7vbYpuivOqcuEfM/view?usp=sharing
 
 
 **Requirements** \
@@ -31,6 +32,5 @@ Test score: 80.90
 ##### Problems
 
 ##### Plan
-- Evaluate with scorer
-- 5-fold validation
+- Edit documentation
 - Convert pytorch to tf.keras
