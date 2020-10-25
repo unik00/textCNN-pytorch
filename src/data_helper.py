@@ -24,8 +24,8 @@ def load_word2vec():
 
 
 def find_text_in_tag(st, tag):
-    """ Find the first text between given pair of tags, returns both the text and
-    its position after separated by [' ', ',', '.'].
+    """ Find the first text between given pair of tags, returns both the text and position
+
     Args:
         st: string, e.g. "Hello <e1>world everybody</e1>".
         tag: tag, e.g. "e1".
@@ -51,7 +51,7 @@ def find_text_in_tag(st, tag):
 
 def refined_text(text):
     """ Refine the text and tagged with POS as required by utils.convert_and_pad().
-    Args:
+    Params:
         text: original text from SemeVal
             e.g: "The <e1>child</e1> was carefully wrapped and bound into the <e2>'cradle'</e2> by means of a cord."
 
@@ -161,11 +161,6 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
                     edge_dict['original-text']
                 )
 
-            # print("Success")
-            # print(edge_dict["refined-text"])
-            # print(edge_dict["source"])
-            # print(edge_dict["dest"])
-            # print(edge_dict["shortest-path"])
             elif i % 4 == 2: # is comment
                 # print(edge_dict)
                 # We don't train datas which we cannot parse dependency
@@ -182,6 +177,7 @@ if __name__ == "__main__":
     model = load_word2vec()
 
     training_data = load_training_data(config.TRAIN_PATH)
+
     print("Number of class: ", config.num_class)
     print("Total training data: {}".format(len(training_data)))
 

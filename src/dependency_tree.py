@@ -68,8 +68,9 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
     Args:
         en_nlp_docs: spacy docs
         sentence: str
-        start: str, start entity
-        end: str, end entity
+        e1_position: str, start entity
+        e2_position: str, end entity
+        original_text: for debugging only
     Returns:
         path: pair of strings (word, POS tag)
     """
@@ -110,11 +111,11 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
         trace = dict()
         dfs(start_node, end_node, trace)
         # print(sent, "---", start,"---", end)
-        path = [(end_node.orth_, end_node.pos_)]
+        path = [(end_node.orth_, end_node.pos_, end_node.dep_)]
         while end_node != start_node:
             end_node = trace[end_node]
             #print(end_node.orth_, end_node.pos_)
-            path.append((end_node.orth_, end_node.pos_))
+            path.append((end_node.orth_, end_node.pos_, end_node.dep_))
         path = path[::-1]
         return path
     print("Cannot parse \"{}\", returning empty array.".format(sentence))

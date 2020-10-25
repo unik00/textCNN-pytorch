@@ -67,12 +67,13 @@ def convert_and_pad(word2vec, sentence, final_len):
 		m: numpy array.
 	"""
 	pos_map = load_label_map("configs/pos_map.txt")
+	dep_map = load_label_map("configs/dep_map.txt")
 
 	m = np.array([])
 
 	#print("path ", path)
 
-	for w, pos in sentence:
+	for w, pos, dep in sentence:
 		# all_types[pos] = 1
 
 		if str(w).lower() not in word2vec:
@@ -81,13 +82,14 @@ def convert_and_pad(word2vec, sentence, final_len):
 		word_emb = word2vec[str(w).lower()]
 		# print(word_emb.shape)
 
-		# one-hot coding
 		pos_emb = np.zeros(config.pos_types)
 		pos_emb[pos_map[pos]] = 1.
-		#end of one hot coding
+
+		dep_emb = np.zeros(config.dep_types)
+		dep_emb[dep_map[dep]] = 1.
 
 		# concatenate word embedding with POS embedding
-		embedding = np.concatenate([word_emb, pos_emb])
+		embedding = np.concatenate([word_emb, pos_emb, dep_emb])
 		m = np.append(m, embedding)
 
 	m = padded(m, final_len)

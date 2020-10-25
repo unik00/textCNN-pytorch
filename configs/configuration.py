@@ -5,15 +5,18 @@ class Config():
     def __init__(self):
         self.num_class = 19
         self.pos_types = 18
+        self.dep_types = 37
 
         self.CUDA = torch.cuda.is_available()
+
         if self.CUDA:
             print("Using GPU.")
+
         self.DEBUG = True
 
         self.DEPENDENCY_TREE_LEN = 16
         self.TEXT_LEN = 85
-        # self.SEQ_LEN = self.DEPENDENCY_TREE_LEN + self.TEXT_LEN
+
         self.SEQ_LEN = self.DEPENDENCY_TREE_LEN
 
         self.WORD_DIM = 300 + self.pos_types
@@ -21,8 +24,8 @@ class Config():
         self.NUM_FILTERS = 128
         self.FILTER_SIZES = range(2,16)
 
-        self.NUM_EPOCH = 3
-        self.LEARNING_RATE = 1.
+        self.NUM_EPOCH = 100
+        self.LEARNING_RATE = 1.5
 
         self.BATCH_SIZE = 32
         # if you want to train the whole batch, set this to very large number, say 10000000000
