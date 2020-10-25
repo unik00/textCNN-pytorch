@@ -20,8 +20,13 @@ Otherwise pretrained model will suffer from 1-2% accuracy degradation.*
 ##### Done 
 
 ```
-Using config.FILTER_SIZES = len(2, 16)  
-Accuracy: 75.67, official F1-score: 79.95
+Shortest-path + POS tags 
+Configs:
+        self.NUM_FILTERS = 128
+        self.FILTER_SIZES = range(2,16)
+
+CV score: 78.62
+Test score: 80.90
 ```
 ##### Problems
 
