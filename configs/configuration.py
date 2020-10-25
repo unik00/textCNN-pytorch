@@ -19,7 +19,7 @@ class Config():
 
         self.SEQ_LEN = self.DEPENDENCY_TREE_LEN
 
-        self.WORD_DIM = 300 + self.pos_types
+        self.WORD_DIM = 300 + self.pos_types + self.dep_types
 
         self.NUM_FILTERS = 128
         self.FILTER_SIZES = range(2,16)
