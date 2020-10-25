@@ -21,17 +21,17 @@ def print_dependency_tree(s):
     [to_nltk_tree(sent.root).pretty_print() for sent in doc.sents]
 
 
-def find(node, s):
+def find(node, original_position):
     """ Find first object that has text s.
     Params:
-        s: string
+        original_position: an integer
     Returns:
         node: spacy node
     """
-    if node.orth_ == s:
+    if node.idx == original_position:
         return node
     for child in node.children:
-        t = find(child, s)
+        t = find(child, original_position)
         if t is not None:
             return t
     return None
@@ -62,7 +62,7 @@ def dfs(u, e, trace):
         dfs(u.head, e, trace)
 
     
-def get_shortest_path(en_nlp_docs, sentence, start, end):
+def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_text):
     """ Find the shortest path between given pair of entities.
         Returns both words and POS tags
     Args:
@@ -73,21 +73,31 @@ def get_shortest_path(en_nlp_docs, sentence, start, end):
     Returns:
         path: pair of strings (word, POS tag)
     """
-    if len(start.split(' ')) > 1:
-        start = start.split(' ')[0]
-    if len(end.split(' ')) > 1:
-        end = end.split(' ')[0]
-
-    if len(start.split('-')) > 1:
-        start = start.split('-')[0]
-    if len(end.split('-')) > 1:
-        end = end.split('-')[0]
+    # if len(start.split(' ')) > 1:
+    #     start = start.split(' ')[0]
+    # if len(end.split(' ')) > 1:
+    #     end = end.split(' ')[0]
+    #
+    # if len(start.split('-')) > 1:
+    #     start = start.split('-')[0]
+    # if len(end.split('-')) > 1:
+    #     end = end.split('-')[0]
 
     doc = en_nlp_docs
     for sent in doc.sents:
-        start_node = find(sent.root, start)
-        end_node = find(sent.root, end)
-        
+        start_node = find(sent.root, e1_position)
+        end_node = find(sent.root, e2_position)
+        # print(start_node, end_node, e1_position, e2_position)
+        # print(original_text)
+        if start_node and end_node:
+            if (start_node.idx != e1_position) or (end_node.idx != e2_position):
+                print("wwrong")
+                print("startnode idx: ", start_node.idx)
+                print(sentence)
+                print(e1_position)
+                print(original_text)
+            # assert start_node.idx == e1_position
+
         if start_node is None:
             # print("Cannot find \"{}\" in \"{}\"".format(start, str(sent)))
             # print_dependency_tree(sentence)

@@ -1,5 +1,4 @@
 import pickle
-from gensim.models import KeyedVectors
 
 from configs.configuration import config
 from src import dependency_tree
@@ -25,19 +24,28 @@ def load_word2vec():
 
 
 def find_text_in_tag(st, tag):
-    """ Find the first text between given pair of tags.
+    """ Find the first text between given pair of tags, returns both the text and
+    its position after separated by [' ', ',', '.'].
     Args:
-        st : string, e.g. "Hello <e1>world everybody</e1>".
-        tag : tag, e.g. "e1".
+        st: string, e.g. "Hello <e1>world everybody</e1>".
+        tag: tag, e.g. "e1".
     Returns:
-        content : string, e.g. "world everybody".
+        content: string, e.g. "world everybody".
+        position: an integer
     """
-    found = False
+    if tag == "e1":
+        st = st.replace("<e2>", "")
+        st = st.replace("</e2>", "")
+    elif tag == "e2":
+        st = st.replace("<e1>", "")
+        st = st.replace("</e1>", "")
+
     for i in range(len(st) - (len(tag)+2) + 1): # +2 is for < and >
         if st[i:i+len(tag)+2] == "<" + tag + ">":
             for j in range(i+1, len(st) - (len(tag)+3) + 1):
                 if st[j:j+len(tag)+3] == "</" + tag + ">":
-                    return st[i+len(tag)+2:j]
+                    return st[i+len(tag)+2:j], i - 1
+
     print("ERROR: tag \"{}\" in string \"{}\" not found!".format(tag, st))
 
 
@@ -54,8 +62,8 @@ def refined_text(text):
     text = text.replace('</e1>','')
     text = text.replace('<e2>','')
     text = text.replace('</e2>','')
-    text = text.replace('"','')
-
+    text = text[1:-1] # trim quotes
+    # text = text.replace('"','')
     # text = text.replace(',','')
     # text = text.replace('.','')
     # text = text.replace(';','')
@@ -116,14 +124,18 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 
                 max_length = max(max_length, len(text.split(' ')))
 
-                e1_text = find_text_in_tag(text, "e1")
-                e2_text = find_text_in_tag(text, "e2")
+                e1_text, e1_position = find_text_in_tag(text, "e1")
+                # print("e1 position: ", e1_position)
+                e2_text, e2_position = find_text_in_tag(text, "e2")
+                # return position of e2
 
                 edge_dict['source'] = e1_text
                 edge_dict['dest'] = e2_text
 
                 text = refined_text(text)
                 en_nlp_doc = dependency_tree.en_nlp(text)
+
+                # print(line)
 
                 for sent in en_nlp_doc.sents:
                     tagged_refined_text = []
@@ -144,8 +156,9 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
                 edge_dict['shortest-path'] = dependency_tree.get_shortest_path(
                     en_nlp_doc,
                     edge_dict["refined-text"],
-                    edge_dict["source"],
-                    edge_dict["dest"]
+                    e1_position,
+                    e2_position,
+                    edge_dict['original-text']
                 )
 
             # print("Success")
@@ -168,14 +181,7 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 if __name__ == "__main__":
     model = load_word2vec()
 
-    print(model['thrown'])
-    '''
-    training_data = load_training_data(config.TEST_PATH)
+    training_data = load_training_data(config.TRAIN_PATH)
     print("Number of class: ", config.num_class)
     print("Total training data: {}".format(len(training_data)))
 
-    for t in training_data:
-        print(t['original-text'])
-        print(t['refined-text'])
-        print(t['shortest-path'])
-    '''

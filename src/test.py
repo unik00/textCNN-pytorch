@@ -1,7 +1,6 @@
 import subprocess
 import torch
 import numpy as np
-from sklearn.metrics import f1_score
 
 from src.model import Net
 from src import data_helper, utils

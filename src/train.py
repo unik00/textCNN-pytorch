@@ -94,7 +94,7 @@ def train(original_training_data, original_validate_data, net, save_name):
 
 def main():
     training_data = data_helper.load_training_data(config.TRAIN_PATH)
-    random.seed(3)
+    # random.seed(31)
     random.shuffle(training_data)
 
     if not config.NO_VAL_SET: # if not training the whole dataset, then do K-fold CV
