@@ -23,6 +23,27 @@ def load_word2vec():
     return model
 
 
+def load_offsetdict(type):
+    """
+    Params:
+        type: a string "1" or "2"
+    """
+    def load_obj(name):
+        with open('obj/' + name + '.pkl', 'rb') as f:
+            return pickle.load(f)
+
+    print("Loading offset dictionary...")
+
+    # use the slim version in debugging mode for quick loading
+    # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+    name = "pos{}_emb".format(type)
+
+    model = load_obj(name)
+    print("Finished loading {}".format(name))
+
+    return model
+
+
 def find_text_in_tag(st, tag):
     """ Find the first text between given pair of tags, returns both the text and position
 
@@ -160,7 +181,17 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
                     e2_position,
                     edge_dict['original-text']
                 )
-
+                # print(edge_dict['original-text'])
+                '''
+                for word, pos, dep, e1_offset, e2_offset in edge_dict['shortest-path']:
+                    # print(word, e1_offset, e2_offset)
+                    if e1_offset not in off1_dict:
+                        off1_dict[e1_offset] = 0
+                    if e2_offset not in off2_dict:
+                        off2_dict[e2_offset] = 0
+                    off1_dict[e1_offset] += 1
+                    off2_dict[e2_offset] += 1
+                '''
             elif i % 4 == 2: # is comment
                 # print(edge_dict)
                 # We don't train datas which we cannot parse dependency
@@ -174,10 +205,35 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 
 
 if __name__ == "__main__":
+    import numpy as np
+    training_data = load_training_data(config.TEST_PATH)
+    print(training_data)
+
+    '''
     model = load_word2vec()
 
-    training_data = load_training_data(config.TRAIN_PATH)
+
+    print(off1_dict)
+    print("---")
+    print(off2_dict)
+    for key in off1_dict:
+        off1_dict[key] = np.random.randn(config.POSITION_DIM)
+
+    for key in off2_dict:
+        off2_dict[key] = np.random.randn(config.POSITION_DIM)
+
+
+    def save_obj(obj, name):
+        with open('obj/' + name + '.pkl', 'wb') as f:
+            pickle.dump(obj, f, 3)
+
+
+    print(off1_dict)
+    print(off2_dict)
+    save_obj(off1_dict, "pos1_emb")
+    save_obj(off2_dict, "pos2_emb")
 
     print("Number of class: ", config.num_class)
     print("Total training data: {}".format(len(training_data)))
 
+    '''

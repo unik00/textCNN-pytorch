@@ -19,12 +19,13 @@ class Config():
 
         self.SEQ_LEN = self.DEPENDENCY_TREE_LEN
 
-        self.WORD_DIM = 300 + self.pos_types + self.dep_types
+        self.POSITION_DIM = 10
+        self.WORD_DIM = 300 + self.pos_types + self.dep_types + 2*self.POSITION_DIM
 
         self.NUM_FILTERS = 128
         self.FILTER_SIZES = range(2,16)
 
-        self.NUM_EPOCH = 100
+        self.NUM_EPOCH = 50
         self.LEARNING_RATE = 1.5
 
         self.BATCH_SIZE = 32
@@ -35,6 +36,7 @@ class Config():
 
         self.TEST_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT"
         self.TRAIN_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT"
+        self.DEV_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/DEV_FILE.TXT"
 
         self.NO_VAL_SET = False
 

@@ -21,13 +21,13 @@ Otherwise pretrained model will suffer from 1-2% accuracy degradation.*
 ##### Done 
 
 ```
-Shortest-path + POS tags 
+Shortest-path + POS tags + dependency relation
 Configs:
         self.NUM_FILTERS = 128
         self.FILTER_SIZES = range(2,16)
 
-CV score: 78.62
-Test score: 80.90
+CV score: 78.62 => 79.17
+Test score: 80.90 => 81.81
 ```
 ##### Problems
 

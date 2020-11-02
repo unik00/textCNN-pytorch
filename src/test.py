@@ -7,7 +7,7 @@ from src import data_helper, utils
 from configs.configuration import config
 
 
-def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
+def compute_acc(net, original_datas, use_cuda=config.CUDA):
     """ Compute accuracy given model and data
     Args:
         net: Net instance
@@ -35,12 +35,8 @@ def compute_acc(word2vec_model, net, original_datas, use_cuda=config.CUDA):
 
     for i in range(0, len(datas), config.BATCH_SIZE):
         mini_batch = datas[i:i+config.BATCH_SIZE]
-        x_batch = utils.convert_to_tensor(word2vec_model, mini_batch)
-
-        if use_cuda:
-            output_batch = net(x_batch.cuda()).detach().cpu().numpy()
-        else:
-            output_batch = net(x_batch).detach().numpy()
+        x_batch = [single['shortest-path'] for single in mini_batch]
+        output_batch = net(x_batch).detach().numpy()
     
         for j, output in enumerate(output_batch):
             pred = np.argmax(output)
@@ -90,10 +86,12 @@ if __name__ == "__main__":
     print(epoch, loss)
 
     word2vec_model = data_helper.load_word2vec()
+    offset1_dict = data_helper.load_offsetdict("1")
+    offset2_dict = data_helper.load_offsetdict("2")
 
     test_data = data_helper.load_training_data(config.TEST_PATH)
     print("len test data", len(test_data))
     # test_data = data_helper.load_training_data(config.TRAIN_PATH)
 
-    print(compute_acc(word2vec_model, model, test_data, False))
+    print(compute_acc(word2vec_model, offset1_dict, offset2_dict, model, test_data, False))
 

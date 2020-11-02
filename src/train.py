@@ -15,22 +15,10 @@ def train(original_training_data, original_validate_data, net, save_name):
     optimizer = optim.Adadelta(net.parameters(), lr=config.LEARNING_RATE)
     criterion = nn.CrossEntropyLoss()
 
-    '''
-    if config.FINE_TUNE:
-        checkpoint = torch.load(config.CHECKPOINT_PATH, map_location=torch.device('cuda:0'))
-        net.load_state_dict(checkpoint['net_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        epoch = checkpoint['epoch']
-        loss = checkpoint['loss']
-        net.train()
-        print("Finished loading checkpoint from {}".format(config.CHECKPOINT_PATH))
-    '''
-
     training_data = original_training_data.copy()
     val_data = original_validate_data.copy()
     print("Training on {} datas, validating on {} datas".format(len(training_data), len(val_data)))
 
-    word2vec_model = data_helper.load_word2vec()    
     if config.BATCH_SIZE > len(training_data):
         print("WARNING: batch size is larger then the length of training data,\n\
             it will be reassigned to length of training data")
@@ -61,10 +49,10 @@ def train(original_training_data, original_validate_data, net, save_name):
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])
 
             # print("x_batch shape: ", x_batch.shape)
-            x_batch = utils.convert_to_tensor(word2vec_model, mini_batch)
+            # x_batch = utils.convert_to_tensor(word2vec_model, offset1_dict, offset2_dict, mini_batch)
+            x_batch = [single['shortest-path'] for single in mini_batch]
 
             if config.CUDA:
-                x_batch = x_batch.cuda()
                 target = target.cuda()
 
             output = net(x_batch)
@@ -79,9 +67,9 @@ def train(original_training_data, original_validate_data, net, save_name):
         avg_loss /= len(training_data) / config.BATCH_SIZE
         print("Epoch {}, loss {}".format(epoch+1, avg_loss))
         if epoch % 5 == 0 or epoch == config.NUM_EPOCH - 1:
-            print("Train acc {:.3f}".format(compute_acc(word2vec_model, net, original_training_data)))
+            print("Train acc {:.3f}".format(compute_acc(net, original_training_data)))
             if val_data:
-                final_f1_on_val = compute_acc(word2vec_model, net, original_validate_data)
+                final_f1_on_val = compute_acc(net, original_validate_data)
                 print("Validate acc {:.3f}".format(final_f1_on_val))
             torch.save({
                 'epoch': epoch,
