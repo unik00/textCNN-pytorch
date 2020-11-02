@@ -2,10 +2,10 @@ import pickle
 
 from gensim.models import KeyedVectors
 
-from src import utils
 from src import data_helper
 from configs.configuration import config
 import numpy as np
+
 
 def save_obj(obj, name):
     with open('obj/' + name + '.pkl', 'wb') as f:
@@ -21,9 +21,10 @@ if __name__ == "__main__":
     crossed = dict()
 
     for t in test_data:
-        words = [w[0] for w in t['shortest-path']]
+        words = [w[0].lower() for w in t['shortest-path']]
 
         for word in words:
+
             if word in word2vec_model:
                 crossed[word] = word2vec_model[word]
             else:
