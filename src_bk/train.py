@@ -44,7 +44,6 @@ def train(original_training_data, original_validate_data, net, save_name):
         avg_loss = 0
         for i in range(0, len(training_data), config.BATCH_SIZE):
             mini_batch = training_data[i:i+config.BATCH_SIZE]
-    #        print("mini_batch", bmini_batch)
             optimizer.zero_grad()
 
             target = torch.LongTensor([int(d['label-id']) for d in mini_batch])

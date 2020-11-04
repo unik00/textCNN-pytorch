@@ -1,36 +1,31 @@
-## Text-CNN implementation using Tensorflow 2 (mostly tf.keras)  
-For semantic relation extraction
+```
+- Static, no position embedding:
+cv: 79.44
+test: 81.30
 
-<h5>Word2vec pre-trained models</h5>
+- Finetune, no position embedding, skip unvailable words in word2vec:
+cv: 79.87
+test: 81.73
 
-*Google-News-all:* https://github.com/mmihaltz/word2vec-GoogleNews-vectors \
-*Google-News-slim:* https://github.com/eyaler/word2vec-slim \
-*Google-News-slim with unavailaible keys initialized:* https://drive.google.com/file/d/1XZ8OizYBCh3nJn9uz7vbYpuivOqcuEfM/view?usp=sharing
+- Finetune, with position embedding modulo position_dim=20:
+cv: 79.75
+test: 
 
+- Finetune, 
+with position embedding modulo position_dim=10, 
+filter_size=range(2,6):
+cv: 79.29
+test:
 
-**Requirements** \
-*If you are financially poor like I am, and forced to use Google Collab,
-please remember to check if the versions match.
-Otherwise pretrained model will suffer from 1-2% accuracy degradation.*
+- Finetune, 
+with position embedding modulo position_dim=10, 
+filter_size=range(2,16),
+num_epoch per fold = 25:
+cv: 79.58
+test: 81.12
 
-    nltk==3.2.5
-    spacy==2.2.4
-    numpy==1.18.5
-    torch==1.6.0
-    
-##### Done 
+- Finetune, dense position embedding, default initialization, position_dim=40
+cv: 
+test:
 
 ```
-Shortest-path + POS tags + dependency relation
-Configs:
-        self.NUM_FILTERS = 128
-        self.FILTER_SIZES = range(2,16)
-
-CV score: 78.62 => 79.17
-Test score: 80.90 => 81.81
-```
-##### Problems
-
-##### Plan
-- Edit documentation
-- Convert pytorch to tf.keras

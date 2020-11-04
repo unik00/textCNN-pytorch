@@ -28,7 +28,7 @@ class Net(nn.Module):
         return emb, key2index
 
     @staticmethod
-    def conf_to_emb(in_dict, freeze=True):
+    def conf_to_emb(in_dict, freeze=False):
         emb = []
         for key in in_dict:
             if type(key) == int: # need this to filter two-way dict
@@ -37,8 +37,7 @@ class Net(nn.Module):
                 onehot[key] = 1.
                 emb.append(onehot)
         emb = torch.FloatTensor(emb)
-        #emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        emb = nn.Embedding(len(in_dict)//2,len(in_dict)//2)
+        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
         return emb
 
     def padded(self, original_arr, final_len):
@@ -57,46 +56,55 @@ class Net(nn.Module):
 
         assert arr.shape[0] < final_len * config.WORD_DIM
 
-        half = (final_len * config.WORD_DIM - arr.shape[0])
+        half = (final_len * config.WORD_DIM - arr.shape[0]) // 2
 
-        p = torch.FloatTensor(np.zeros(half)).cuda()
-        out_arr = torch.cat([arr,p], dim=0)
+        p = torch.FloatTensor(np.zeros(half))
+        out_arr = torch.cat([p, arr, p], dim=0)
 
-        # print("p shape", p.shape)
-        # print("out_arr shape", out_arr.shape)
-        # print(out_arr.shape[0], final_len * config.WORD_DIM)
+        print("p shape", p.shape)
+        print("out_arr shape", out_arr.shape)
+        print(out_arr.shape[0], final_len * config.WORD_DIM)
 
-        #if out_arr.shape[0] != final_len * config.WORD_DIM:
-            #out_arr = torch.cat([out_arr, torch.FloatTensor([0]).cuda()])
+        if out_arr.shape[0] != final_len * config.WORD_DIM:
+            out_arr = torch.cat([out_arr, torch.FloatTensor([0])])
 
+        print("after pad missing zero: ", out_arr.shape[0], final_len * config.WORD_DIM)
         assert(out_arr.shape[0] == final_len * config.WORD_DIM)
+
         out_arr = out_arr.view(1, out_arr.shape[0])
         return out_arr
 
     def convert_and_pad_single(self, sentence):
         m = []
-        #print("sentence: ", sentence)
+        print(sentence)
         for w, pos, dep, offset1, offset2 in sentence:
             if str(w).lower() not in self.word2vec_index:
-                #print("{} not in word2vec".format(w))
+                print("{} not in word2vec".format(w))
                 continue
             word_2_index = self.word2vec_index[str(w).lower()]
             # print(self.word2vec_emb)
             word_2_index = torch.LongTensor([word_2_index])
             # print("word 2 index: ", word_2_index)
-            word_emb = self.word2vec_emb(word_2_index.cuda())
+            word_emb = self.word2vec_emb(word_2_index)
+            print(w)
+            print("word emb: ", word_emb)
 
-            pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).cuda())
+            pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]))
+            print(pos)
+            print("pos emb: ", pos_emb)
 
-            dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).cuda())
+            dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]))
+            print(dep)
+            print("dep emb:", dep_emb)
 
-            offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).cuda())
-            offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).cuda())
-
+            offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]))
+            offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]))
+            print("offset1:", offset1)
+            print("offset1_emb", offset1_emb)
+            print("offset2:", offset2)
+            print("offset2_emb", offset2_emb)
             # concatenate word embedding with POS embedding
             embedding = torch.cat([word_emb, pos_emb, dep_emb, offset1_emb, offset2_emb], dim=1)
-            #embedding = torch.cat([word_emb, pos_emb, dep_emb], dim=1)
-            
             # print(embedding.shape)
 
             m.append(embedding)
@@ -106,7 +114,6 @@ class Net(nn.Module):
         return m
 
     def convert_to_batch(self, batch_of_sentence):
-        #print("batch of sentence: ", batch_of_sentence)
         m = []
         for sentence in batch_of_sentence:
             m.append(self.convert_and_pad_single(sentence))
@@ -130,11 +137,11 @@ class Net(nn.Module):
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
-        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=True)
+        self.dep_emb = self.conf_to_emb(self.dep_dict)
 
         # intialize part-of-speech dict
         self.POS_dict = data_helper.load_label_map('configs/pos_map.txt')
-        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=True)
+        self.POS_emb = self.conf_to_emb(self.POS_dict)
 
         for filter_size in config.FILTER_SIZES:
             conv = nn.Conv1d(1,\
@@ -143,18 +150,18 @@ class Net(nn.Module):
                 stride=config.WORD_DIM)
             # in_channel,out_channel,window_size,stride
             setattr(self, 'conv_' + str(filter_size), conv)
-        
+
         self.fc = nn.Linear(len(config.FILTER_SIZES)*config.NUM_FILTERS, config.num_class)
-    
+
     def forward(self, x):
 
-        # print("x shape", x.shape)
+        print("x shape", x.shape)
         z = []
         # after conv with relu activation [n][1][85*300] -> [n][20][.]
         # print(x.shape)
 
         for filter_size in config.FILTER_SIZES:
-            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x)) 
+            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x))
             t = F.max_pool1d(t, config.SEQ_LEN-filter_size+1)
             z.append(t)
             # after max-pool-over-time [n][20][.] -> [n][20][1]
@@ -176,9 +183,16 @@ class Net(nn.Module):
 if __name__ == "__main__":
     net = Net()
     training_data = data_helper.load_training_data(config.DEV_PATH)
-    print(training_data)
+    for d in training_data:
+        print(d['original-text'])
+        print(d['shortest-path'])
+
+    # print(training_data)
     raw_batch = [s['shortest-path'] for s in training_data[:config.BATCH_SIZE]]
-    net(raw_batch)
+    batch = net.convert_to_batch(raw_batch)
+    print(raw_batch)
+    net(batch)
+    print(config.WORD_DIM)
     '''
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)

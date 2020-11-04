@@ -195,8 +195,8 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
             elif i % 4 == 2: # is comment
                 # print(edge_dict)
                 # We don't train datas which we cannot parse dependency
-                if not edge_dict['shortest-path']:
-                     print("Removed this data from data set because we cannot parse:\n \t{}".format(edge_dict['original-text']))
+                if data_loc == config.TRAIN_PATH and not edge_dict['shortest-path']:
+                     print("Removed this data from train set because we cannot parse:\n \t{}".format(edge_dict['original-text']))
                 else:
                     ret.append(edge_dict)
     # print("max_length: {}".format(max_length))
@@ -206,8 +206,14 @@ def load_training_data(data_loc='data/SemEval2010_task8_all_data/SemEval2010_tas
 
 if __name__ == "__main__":
     import numpy as np
-    training_data = load_training_data(config.TEST_PATH)
+    training_data = load_training_data(config.TEST_PATH) + load_training_data(config.TRAIN_PATH)
     print(training_data)
+    clgt = 0
+    for d in training_data:
+        for _, _, _, o1, o2 in d['shortest-path']:
+            clgt = max(clgt, abs(o1))
+            clgt = max(clgt, abs(o2))
+    print(clgt)
 
     '''
     model = load_word2vec()
