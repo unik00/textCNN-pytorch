@@ -18,7 +18,8 @@ def compute_acc(net, original_datas, use_cuda=config.CUDA):
         acc: double
     """
     label_map = data_helper.load_label_map()
-    net = net.cuda()
+    if config.CUDA:
+        net = net.cuda()
     net.eval()
     datas = original_datas.copy()
 

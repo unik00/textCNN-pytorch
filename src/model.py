@@ -38,7 +38,7 @@ class Net(nn.Module):
                 emb.append(onehot)
         emb = torch.FloatTensor(emb)
         #emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        emb = nn.Embedding(len(in_dict)//2,len(in_dict)//2)
+        emb = nn.Embedding(len(in_dict)//2,config.DEP_DIM)
         return emb
 
     def padded(self, original_arr, final_len):
@@ -53,13 +53,13 @@ class Net(nn.Module):
         arr = original_arr.view(original_arr.shape[1])
 
         if arr.shape[0] == final_len * config.WORD_DIM:
-            return arr
+            return arr.view(1, arr.shape[0])
 
-        assert arr.shape[0] < final_len * config.WORD_DIM
+        assert arr.shape[0] < final_len * config.WORD_DIM, "arr shape: {}, final_len: {}, word_dim: {}".format(arr.shape[0],final_len,config.WORD_DIM)
 
         half = (final_len * config.WORD_DIM - arr.shape[0])
 
-        p = torch.FloatTensor(np.zeros(half)).cuda()
+        p = torch.FloatTensor(np.zeros(half)).to(config.device)
         out_arr = torch.cat([arr,p], dim=0)
 
         # print("p shape", p.shape)
@@ -67,7 +67,7 @@ class Net(nn.Module):
         # print(out_arr.shape[0], final_len * config.WORD_DIM)
 
         #if out_arr.shape[0] != final_len * config.WORD_DIM:
-            #out_arr = torch.cat([out_arr, torch.FloatTensor([0]).cuda()])
+            #out_arr = torch.cat([out_arr, torch.FloatTensor([0])])
 
         assert(out_arr.shape[0] == final_len * config.WORD_DIM)
         out_arr = out_arr.view(1, out_arr.shape[0])
@@ -76,7 +76,12 @@ class Net(nn.Module):
     def convert_and_pad_single(self, sentence):
         m = []
         #print("sentence: ", sentence)
-        for w, pos, dep, offset1, offset2 in sentence:
+
+        last_emb = None
+        last_edge = None
+
+        for w, pos, dep, dep_dir, offset1, offset2 in sentence:
+            #print(w, pos, dep, offset1, offset2)
             if str(w).lower() not in self.word2vec_index:
                 #print("{} not in word2vec".format(w))
                 continue
@@ -84,33 +89,55 @@ class Net(nn.Module):
             # print(self.word2vec_emb)
             word_2_index = torch.LongTensor([word_2_index])
             # print("word 2 index: ", word_2_index)
-            word_emb = self.word2vec_emb(word_2_index.cuda())
+            word_emb = self.word2vec_emb(word_2_index.to(config.device))
 
-            pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).cuda())
-
-            dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).cuda())
-
-            offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).cuda())
-            offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).cuda())
+            pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).to(config.device))
+            dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
+            
+            #assert self.offset_index(offset1)>=0 and self.offset_index(offset1)<160, offset1
+            #assert self.offset_index(offset2)>=0 and self.offset_index(offset2)<160, offset2
+            
+            offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).to(config.device))
+            offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).to(config.device))
 
             # concatenate word embedding with POS embedding
-            embedding = torch.cat([word_emb, pos_emb, dep_emb, offset1_emb, offset2_emb], dim=1)
-            #embedding = torch.cat([word_emb, pos_emb, dep_emb], dim=1)
-            
-            # print(embedding.shape)
+            embedding = torch.cat([word_emb, offset1_emb, offset2_emb, pos_emb], dim=1)
 
-            m.append(embedding)
+            if last_emb is not None:
+                assert last_edge is not None
+                new_edge_embedding = torch.cat([last_emb, last_edge, embedding], dim=1)
+                # print(last_emb)
+                # print(last_edge)
+                # print(embedding)
+                m.append(new_edge_embedding)
+                #print(new_edge_embedding.shape)
+                assert new_edge_embedding.shape[1] == config.WORD_DIM
+
+            dep_dir_emb = torch.FloatTensor(dep_dir).view(1, 2)
+            last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
+            last_emb = embedding
+
         m = torch.cat(m, dim=1)
         # print(sentence)
         m = self.padded(m, config.SEQ_LEN)
         return m
 
     def convert_to_batch(self, batch_of_sentence):
-        #print("batch of sentence: ", batch_of_sentence)
         m = []
         for sentence in batch_of_sentence:
-            m.append(self.convert_and_pad_single(sentence))
-        out = torch.cat(m, dim=0)
+            t = self.convert_and_pad_single(sentence)
+            m.append(t)
+
+        try:
+            out = torch.cat(m, dim=0)
+        except:
+            print("batch of sentence: ", batch_of_sentence)
+            for clgt in m:
+                print(clgt.shape)
+                print(clgt)
+                print()
+                
+            exit()
         out = out.view(config.BATCH_SIZE, 1, -1)
         return out
 
@@ -122,11 +149,11 @@ class Net(nn.Module):
         self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
 
         # initialize e1_offset_dict
-        self.offset_index = lambda x: x + 40
-        self.e1_offset_emb = nn.Embedding(80, config.POSITION_DIM)
+        self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
+        self.e1_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM)
 
         # initialize e2_offset_dict
-        self.e2_offset_emb = nn.Embedding(80, config.POSITION_DIM)
+        self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM)
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
@@ -178,7 +205,8 @@ if __name__ == "__main__":
     training_data = data_helper.load_training_data(config.DEV_PATH)
     print(training_data)
     raw_batch = [s['shortest-path'] for s in training_data[:config.BATCH_SIZE]]
-    net(raw_batch)
+    batch = net.convert_to_batch(raw_batch)
+    net(batch)
     '''
     def count_parameters(model):
         return sum(p.numel() for p in model.parameters() if p.requires_grad)

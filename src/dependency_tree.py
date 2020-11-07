@@ -1,24 +1,6 @@
 import spacy
-from nltk import Tree
 
 en_nlp = spacy.load("en_core_web_sm")
-
-
-def to_nltk_tree(node):
-    # print(node.head)
-    if node.n_lefts + node.n_rights > 0:
-        return Tree(node.orth_, [to_nltk_tree(child) for child in node.children])
-    else:
-        return node.orth_
-
-
-def print_dependency_tree(s):
-    """
-    Params:
-        s: string
-    """
-    doc = en_nlp(s)
-    [to_nltk_tree(sent.root).pretty_print() for sent in doc.sents]
 
 
 def find(node, original_position):
@@ -54,14 +36,14 @@ def dfs(u, e, trace):
 
     for v in u.children:
         if v not in trace:
-            trace[v] = u
+            trace[v] = (u, [0, 1])
             dfs(v, e, trace)
 
     if u.head and u.head not in trace:
-        trace[u.head] = u
+        trace[u.head] = (u, [1, 0])
         dfs(u.head, e, trace)
 
-    
+
 def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_text):
     """ Find the shortest path between given pair of entities.
         Returns both words and POS tags
@@ -74,15 +56,7 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
     Returns:
         path: pair of strings (word, POS tag)
     """
-    # if len(start.split(' ')) > 1:
-    #     start = start.split(' ')[0]
-    # if len(end.split(' ')) > 1:
-    #     end = end.split(' ')[0]
-    #
-    # if len(start.split('-')) > 1:
-    #     start = start.split('-')[0]
-    # if len(end.split('-')) > 1:
-    #     end = end.split('-')[0]
+
 
     doc = en_nlp_docs
     for sent in doc.sents:
@@ -115,16 +89,21 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
 
         dfs(start_node, end_node, trace)
         # print(sent, "---", start,"---", end)
-        path = [(end_node.orth_, end_node.pos_,
+
+        path = [(end_node.orth_,
+                 end_node.pos_,
                  end_node.dep_,
+                 [0, 0], # no edge here
                  start_node_token_index-end_node.i,
                  end_node_token_index-end_node.i)]
+
         while end_node != start_node:
-            end_node = trace[end_node]
+            end_node, edge_direction = trace[end_node]
             #print(end_node.orth_, end_node.pos_)
             path.append((end_node.orth_,
                          end_node.pos_,
                          end_node.dep_,
+                         edge_direction,
                          start_node_token_index - end_node.i,
                          end_node_token_index - end_node.i
                          ))
@@ -134,8 +113,53 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
     return []
 
 
+'''
+def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_text):
+    doc = en_nlp_docs
+    path = []
+
+    for sent in doc.sents:
+        start_node = find(sent.root, e1_position)
+        end_node = find(sent.root, e2_position)
+        # print(start_node, end_node, e1_position, e2_position)
+        # print(original_text)
+        if start_node and end_node:
+            if (start_node.idx != e1_position) or (end_node.idx != e2_position):
+                print("wwrong")
+                print("startnode idx: ", start_node.idx)
+                print(sentence)
+                print(e1_position)
+                print(original_text)
+            # assert start_node.idx == e1_position
+
+        if start_node is None:
+            # print("Cannot find \"{}\" in \"{}\"".format(start, str(sent)))
+            # print_dependency_tree(sentence)
+            continue
+        if end_node is None:
+            # print("Cannot find \"{}\" in \"{}\"".format(end, str(sent)))
+            # print_dependency_tree(sentence)
+            continue
+
+        start_node_token_index = start_node.i
+        end_node_token_index = end_node.i
+
+        for end_node in sent:
+            #print(end_node.orth_, end_node.pos_)
+            path.append((end_node.orth_,
+                         end_node.pos_,
+                         end_node.dep_,
+                         start_node_token_index - end_node.i,
+                         end_node_token_index - end_node.i
+                         ))
+        # path = path[::-1]
+        return path
+    print("Cannot parse \"{}\", returning empty array.".format(sentence))
+    return []
+
+'''
+
 if __name__ == "__main__":
     s = "They tried an assault of their own an hour later, with two columns of sixteen tanks backed by a battalion of Panzer grenadiers"
     s = "He removed the glass slide precleaned in piranha solution that was placed upright in a beaker"
     print_dependency_tree(s)
-    print(get_shortest_path(s, "slide", "beaker"))

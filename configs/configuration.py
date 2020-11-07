@@ -5,27 +5,33 @@ class Config():
     def __init__(self):
         self.num_class = 19
         self.pos_types = 18
-        self.dep_types = 37
+        self.dep_types = 44
+
+        self.device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
         self.CUDA = torch.cuda.is_available()
 
         if self.CUDA:
+            torch.set_default_tensor_type('torch.cuda.FloatTensor')
             print("Using GPU.")
 
         self.DEBUG = True
 
         self.DEPENDENCY_TREE_LEN = 16
-        self.TEXT_LEN = 85
+        self.TEXT_LEN = 97
 
         self.SEQ_LEN = self.DEPENDENCY_TREE_LEN
+        
+        self.MAX_ABS_OFFSET = 96
+        self.POSITION_DIM = 40
+        self.DEP_DIM = 10
+        self.POS_DIM = self.DEP_DIM # dont change this
+        self.WORD_DIM = 2*(300+self.POSITION_DIM*2+self.POS_DIM)+self.DEP_DIM + 2 # 2 is for edge direction
 
-        self.POSITION_DIM = 50
-        self.WORD_DIM = 300 + self.pos_types + self.dep_types  + self.POSITION_DIM * 2
-
-        self.NUM_FILTERS = 128
+        self.NUM_FILTERS = 56
         self.FILTER_SIZES = range(2,16)
 
-        self.NUM_EPOCH = 100
+        self.NUM_EPOCH = 50
         self.LEARNING_RATE = 1.
 
         self.BATCH_SIZE = 32
@@ -36,7 +42,8 @@ class Config():
 
         self.TEST_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_testing_keys/TEST_FILE_FULL.TXT"
         self.TRAIN_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT"
+        self.DEV_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/DEV_FILE.TXT"
 
-        self.NO_VAL_SET = True
+        self.NO_VAL_SET = False
 
 config = Config()

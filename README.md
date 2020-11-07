@@ -24,8 +24,20 @@ num_epoch per fold = 25:
 cv: 79.58
 test: 81.12
 
-- Finetune, dense position embedding, default initialization, position_dim=40
+- Finetune, 
+initialized word2vec, 
+filtersizes=[2,3,4,5], 
+numfilters=128,
+only shortest path + position:
+cv: 81.31
+test: 82.2
+
+- Finetune, 
+initialized word2vec, 
+filtersizes=[2 to 15], 
+numfilters=128,
+only shortest path + position:
 cv: 
-test:
+test: 81.8
 
 ```
