@@ -79,10 +79,12 @@ def refined_text(text):
     Returns:
         text, e.g: The child was carefully wrapped and bound into the cradle by means of a cord
     """
+    import re
     text = text.replace('<e1>','')
     text = text.replace('</e1>','')
     text = text.replace('<e2>','')
     text = text.replace('</e2>','')
+
     text = text[1:-1] # trim quotes
     # text = text.replace('"','')
     # text = text.replace(',','')

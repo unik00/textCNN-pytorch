@@ -28,7 +28,7 @@ class Net(nn.Module):
         return emb, key2index
 
     @staticmethod
-    def conf_to_emb(in_dict, freeze=True):
+    def conf_to_emb(in_dict, freeze):
         emb = []
         for key in in_dict:
             if type(key) == int: # need this to filter two-way dict
@@ -37,8 +37,8 @@ class Net(nn.Module):
                 onehot[key] = 1.
                 emb.append(onehot)
         emb = torch.FloatTensor(emb)
-        #emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        emb = nn.Embedding(len(in_dict)//2,config.DEP_DIM)
+        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
+        #emb = nn.Embedding(len(in_dict)//2,len(in_dict)//2)
         return emb
 
     def padded(self, original_arr, final_len):
@@ -81,6 +81,7 @@ class Net(nn.Module):
         last_edge = None
 
         for w, pos, dep, dep_dir, offset1, offset2 in sentence:
+            assert dep != "ROOT"
             #print(w, pos, dep, offset1, offset2)
             if str(w).lower() not in self.word2vec_index:
                 #print("{} not in word2vec".format(w))
@@ -92,7 +93,8 @@ class Net(nn.Module):
             word_emb = self.word2vec_emb(word_2_index.to(config.device))
 
             pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).to(config.device))
-            dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
+            if dep is not None:
+                dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
             
             #assert self.offset_index(offset1)>=0 and self.offset_index(offset1)<160, offset1
             #assert self.offset_index(offset2)>=0 and self.offset_index(offset2)<160, offset2
@@ -105,7 +107,7 @@ class Net(nn.Module):
 
             if last_emb is not None:
                 assert last_edge is not None
-                new_edge_embedding = torch.cat([last_emb, last_edge, embedding], dim=1)
+                new_edge_embedding = torch.cat([last_emb.tanh(), last_edge.tanh(), embedding.tanh()], dim=1)
                 # print(last_emb)
                 # print(last_edge)
                 # print(embedding)
@@ -113,11 +115,15 @@ class Net(nn.Module):
                 #print(new_edge_embedding.shape)
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
-            dep_dir_emb = torch.FloatTensor(dep_dir).view(1, 2)
-            last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
-            last_emb = embedding
+            dep_dir_emb = torch.FloatTensor(dep_dir).to(config.device).view(1, 2)
+            if dep is not None: # not the last token in setence
+                last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
+                last_emb = embedding
 
-        m = torch.cat(m, dim=1)
+        if len(m) > 0:
+            m = torch.cat(m, dim=1)
+        else:
+            m = torch.FloatTensor(np.zeros(config.WORD_DIM)).to(config.device).view(1, config.WORD_DIM)
         # print(sentence)
         m = self.padded(m, config.SEQ_LEN)
         return m
@@ -157,11 +163,11 @@ class Net(nn.Module):
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
-        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=True)
+        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=False)
 
         # intialize part-of-speech dict
         self.POS_dict = data_helper.load_label_map('configs/pos_map.txt')
-        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=True)
+        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=False)
 
         for filter_size in config.FILTER_SIZES:
             conv = nn.Conv1d(1,\
@@ -181,7 +187,7 @@ class Net(nn.Module):
         # print(x.shape)
 
         for filter_size in config.FILTER_SIZES:
-            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x)) 
+            t = getattr(self, 'conv_' + str(filter_size))(x).tanh() 
             t = F.max_pool1d(t, config.SEQ_LEN-filter_size+1)
             z.append(t)
             # after max-pool-over-time [n][20][.] -> [n][20][1]

@@ -105,7 +105,7 @@ def main():
         cv_score /= 5
         print("Final CV score: {}".format(cv_score))
     else:
-        val_data = []
+        val_data = data_helper.load_training_data(config.TEST_PATH)
         train(training_data, val_data, Net(), config.CHECKPOINT_PATH)
 
 

@@ -29,7 +29,7 @@ if __name__ == "__main__":
                 crossed[word] = word2vec_model[word]
             else:
                 print("not found {}".format(word))
-                crossed[word] = np.random.randn(300)
+                crossed[word] = np.random.randn(300) / 8
                 print(crossed[word])
 
     save_obj(crossed, "word2vec_crossed")

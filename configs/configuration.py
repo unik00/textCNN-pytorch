@@ -1,6 +1,5 @@
 import torch
 
-
 class Config():
     def __init__(self):
         self.num_class = 19
@@ -24,14 +23,14 @@ class Config():
         
         self.MAX_ABS_OFFSET = 96
         self.POSITION_DIM = 40
-        self.DEP_DIM = 10
-        self.POS_DIM = self.DEP_DIM # dont change this
-        self.WORD_DIM = 2*(300+self.POSITION_DIM*2+self.POS_DIM)+self.DEP_DIM + 2 # 2 is for edge direction
+        self.DEP_DIM = self.dep_types
+        self.POS_DIM = self.pos_types
+        self.WORD_DIM = 2*(300+self.POSITION_DIM*2+self.POS_DIM) + self.DEP_DIM + 2 # 2 is for edge direction
 
-        self.NUM_FILTERS = 56
-        self.FILTER_SIZES = range(2,16)
+        self.NUM_FILTERS = 64
+        self.FILTER_SIZES = [1, 2, 3]
 
-        self.NUM_EPOCH = 50
+        self.NUM_EPOCH = 200
         self.LEARNING_RATE = 1.
 
         self.BATCH_SIZE = 32
@@ -44,6 +43,6 @@ class Config():
         self.TRAIN_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/TRAIN_FILE.TXT"
         self.DEV_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/DEV_FILE.TXT"
 
-        self.NO_VAL_SET = False
+        self.NO_VAL_SET = True
 
 config = Config()
