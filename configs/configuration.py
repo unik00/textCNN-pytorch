@@ -28,7 +28,7 @@ class Config():
         self.WORD_DIM = 2*(300+self.POSITION_DIM*2+self.POS_DIM) + self.DEP_DIM + 2 # 2 is for edge direction
 
         self.NUM_FILTERS = 64
-        self.FILTER_SIZES = [1, 2, 3]
+        self.FILTER_SIZES = [1,2,3]
 
         self.NUM_EPOCH = 200
         self.LEARNING_RATE = 1.

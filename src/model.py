@@ -107,7 +107,7 @@ class Net(nn.Module):
 
             if last_emb is not None:
                 assert last_edge is not None
-                new_edge_embedding = torch.cat([last_emb.tanh(), last_edge.tanh(), embedding.tanh()], dim=1)
+                new_edge_embedding = torch.cat([last_emb, last_edge, embedding], dim=1)
                 # print(last_emb)
                 # print(last_edge)
                 # print(embedding)
@@ -180,14 +180,13 @@ class Net(nn.Module):
         self.fc = nn.Linear(len(config.FILTER_SIZES)*config.NUM_FILTERS, config.num_class)
     
     def forward(self, x):
-
         # print("x shape", x.shape)
         z = []
         # after conv with relu activation [n][1][85*300] -> [n][20][.]
         # print(x.shape)
 
         for filter_size in config.FILTER_SIZES:
-            t = getattr(self, 'conv_' + str(filter_size))(x).tanh() 
+            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x)) 
             t = F.max_pool1d(t, config.SEQ_LEN-filter_size+1)
             z.append(t)
             # after max-pool-over-time [n][20][.] -> [n][20][1]
