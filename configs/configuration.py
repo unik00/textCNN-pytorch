@@ -30,10 +30,10 @@ class Config():
         self.NUM_FILTERS = 64
         self.FILTER_SIZES = [1,2,3]
 
-        self.NUM_EPOCH = 200
+        self.NUM_EPOCH = 36
         self.LEARNING_RATE = 1.
 
-        self.BATCH_SIZE = 32
+        self.BATCH_SIZE = 50
         # if you want to train the whole batch, set this to very large number, say 10000000000
 
         self.FINE_TUNE = False

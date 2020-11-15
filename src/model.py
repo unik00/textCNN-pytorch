@@ -156,10 +156,10 @@ class Net(nn.Module):
 
         # initialize e1_offset_dict
         self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
-        self.e1_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM)
+        self.e1_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
 
         # initialize e2_offset_dict
-        self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM)
+        self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
