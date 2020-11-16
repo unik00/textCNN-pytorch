@@ -36,11 +36,11 @@ def dfs(u, e, trace):
 
     for v in u.children:
         if v not in trace:
-            trace[v] = (u, v.dep_, [0, 1])
+            trace[v] = (u, v.dep_, 0)
             dfs(v, e, trace)
 
     if u.head and u.head not in trace:
-        trace[u.head] = (u, u.dep_, [1, 0])
+        trace[u.head] = (u, u.dep_, 1)
         dfs(u.head, e, trace)
 
 
@@ -93,7 +93,7 @@ def get_shortest_path(en_nlp_docs, sentence, e1_position, e2_position, original_
         path = [(end_node.orth_,
                  end_node.pos_,
                  None, # no edge here
-                 [0, 0], # no edge here
+                 0, # no edge here
                  start_node_token_index-end_node.i,
                  end_node_token_index-end_node.i)]
 

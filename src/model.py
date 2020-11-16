@@ -41,6 +41,7 @@ class Net(nn.Module):
         #emb = nn.Embedding(len(in_dict)//2,len(in_dict)//2)
         return emb
 
+
     def padded(self, original_arr, final_len):
         """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
         Args:
@@ -101,7 +102,6 @@ class Net(nn.Module):
             
             offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).to(config.device))
             offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).to(config.device))
-
             # concatenate word embedding with POS embedding
             embedding = torch.cat([word_emb, offset1_emb, offset2_emb, pos_emb], dim=1)
 
@@ -115,7 +115,9 @@ class Net(nn.Module):
                 #print(new_edge_embedding.shape)
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
-            dep_dir_emb = torch.FloatTensor(dep_dir).to(config.device).view(1, 2)
+            #print("dep dir: ", dep_dir)
+            #print(self.edge_dir_emb(torch.LongTensor([dep_dir])))
+            dep_dir_emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
             if dep is not None: # not the last token in setence
                 last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
                 last_emb = embedding
@@ -160,6 +162,8 @@ class Net(nn.Module):
 
         # initialize e2_offset_dict
         self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
+
+        self.edge_dir_emb = nn.Embedding(2, 2, max_norm=2)
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')

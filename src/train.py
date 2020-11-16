@@ -85,7 +85,7 @@ def train(original_training_data, original_validate_data, net, save_name):
 
 
 def main():
-    training_data = data_helper.load_training_data(config.TRAIN_PATH)
+    training_data = data_helper.load_training_data(config.DEV_PATH)
     # random.seed(31)
     random.shuffle(training_data)
 
