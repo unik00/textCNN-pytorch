@@ -10,63 +10,64 @@ from configs.configuration import config
 from src import data_helper
 
 
-def padded(original_arr, final_len):
-    """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
-    Args:
-        original_arr: numpy array with shape [1, x*WORD_DIM], x MUST be less than or equal to SEQ_LEN.
-        final_len: an integer denoteing the final len after padding
+class TextNet(nn.Module):
+    @staticmethod
+    def padded(original_arr, final_len):
+        """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
+        Args:
+            original_arr: numpy array with shape [1, x*WORD_DIM], x MUST be less than or equal to SEQ_LEN.
+            final_len: an integer denoteing the final len after padding
 
-    Returns:
-        arr: padded array
-    """
-    arr = original_arr.view(original_arr.shape[1])
+        Returns:
+            arr: padded array
+        """
+        arr = original_arr.view(original_arr.shape[1])
 
-    if arr.shape[0] == final_len * config.WORD_DIM:
-        return arr.view(1, arr.shape[0])
+        if arr.shape[0] == final_len * config.WORD_DIM:
+            return arr.view(1, arr.shape[0])
 
-    assert arr.shape[0] < final_len * config.WORD_DIM, "arr shape: {}, final_len: {}, word_dim: {}".format(arr.shape[0],
-                                                                                                           final_len,
-                                                                                                           config.WORD_DIM)
+        assert arr.shape[0] < final_len * config.WORD_DIM, "arr shape: {}, final_len: {}, word_dim: {}".format(
+            arr.shape[0],
+            final_len,
+            config.WORD_DIM)
 
-    half = (final_len * config.WORD_DIM - arr.shape[0])
+        half = (final_len * config.WORD_DIM - arr.shape[0])
 
-    p = torch.FloatTensor(np.zeros(half)).to(config.device)
-    out_arr = torch.cat([arr, p], dim=0)
+        p = torch.FloatTensor(np.zeros(half)).to(config.device)
+        out_arr = torch.cat([arr, p], dim=0)
 
-    assert (out_arr.shape[0] == final_len * config.WORD_DIM)
-    out_arr = out_arr.view(1, out_arr.shape[0])
-    return out_arr
+        assert (out_arr.shape[0] == final_len * config.WORD_DIM)
+        out_arr = out_arr.view(1, out_arr.shape[0])
+        return out_arr
 
+    @staticmethod
+    def dict_to_emb(in_dict):
+        key2index = dict()
+        index = 0
+        emb = []
+        for key in in_dict:
+            key2index[key] = index
+            emb.append(in_dict[key])
+            index += 1
 
-def dict_to_emb(in_dict):
-    key2index = dict()
-    index = 0
-    emb = []
-    for key in in_dict:
-        key2index[key] = index
-        emb.append(in_dict[key])
-        index += 1
+        emb = torch.FloatTensor(emb)
+        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
+        return emb, key2index
 
-    emb = torch.FloatTensor(emb)
-    emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-    return emb, key2index
+    @staticmethod
+    def conf_to_emb(in_dict, freeze):
+        emb = []
+        for key in in_dict:
+            if type(key) == int:  # need this to filter two-way dict
+                assert len(in_dict) % 2 == 0
+                onehot = np.zeros(len(in_dict) // 2, dtype=float)
+                onehot[key] = 1.
+                emb.append(onehot)
+        emb = torch.FloatTensor(emb)
+        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
 
+        return emb
 
-def conf_to_emb(in_dict, freeze):
-    emb = []
-    for key in in_dict:
-        if type(key) == int:  # need this to filter two-way dict
-            assert len(in_dict) % 2 == 0
-            onehot = np.zeros(len(in_dict) // 2, dtype=float)
-            onehot[key] = 1.
-            emb.append(onehot)
-    emb = torch.FloatTensor(emb)
-    emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-
-    return emb
-
-
-class Net(nn.Module):
     def convert_and_pad_single(self, sentence):
         m = []
 
@@ -114,11 +115,10 @@ class Net(nn.Module):
             m = torch.cat(m, dim=1)
         else:
             m = torch.FloatTensor(np.zeros(config.WORD_DIM)).to(config.device).view(1, config.WORD_DIM)
-        m = padded(m, config.SEQ_LEN)
+        m = self.padded(m, config.SEQ_LEN)
         return m
 
     def convert_to_batch(self, batch_of_sentence):
-
         m = []
         for sentence in batch_of_sentence:
             t = self.convert_and_pad_single(sentence)
@@ -133,11 +133,11 @@ class Net(nn.Module):
         return out
 
     def __init__(self):
-        super(Net, self).__init__()
+        super(TextNet, self).__init__()
 
         # initialize word2vec embedding
         word2vec_dict = data_helper.load_word2vec()
-        self.word2vec_emb, self.word2vec_index = dict_to_emb(word2vec_dict)
+        self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
 
         # initialize e1_offset_dict
         self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
@@ -150,11 +150,11 @@ class Net(nn.Module):
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
-        self.dep_emb = conf_to_emb(self.dep_dict, freeze=False)
+        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=False)
 
         # initialize part-of-speech dict
         self.POS_dict = data_helper.load_label_map('configs/pos_map.txt')
-        self.POS_emb = conf_to_emb(self.POS_dict, freeze=False)
+        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=False)
 
         for filter_size in config.FILTER_SIZES:
             conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
@@ -181,7 +181,7 @@ class Net(nn.Module):
 
 
 if __name__ == "__main__":
-    net = Net()
+    net = TextNet()
     training_data = data_helper.load_training_data(config.DEV_PATH)
     print(training_data)
     raw_batch = [s['shortest-path'] for s in training_data[:config.BATCH_SIZE]]

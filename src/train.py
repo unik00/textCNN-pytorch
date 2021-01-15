@@ -1,13 +1,10 @@
 import random
-import numpy as np
 import torch
-import torch.nn.functional as F
 from torch import nn, optim
 
 from src import data_helper
-from src.model import Net
+from src.model.textnet import Net
 from src.test import compute_acc
-from src import dependency_tree
 from configs.configuration import config
 
 
