@@ -73,19 +73,23 @@ class Net(nn.Module):
         last_emb = None
         last_edge = None
 
+        # iterate the sentence
         for w, pos, dep, dep_dir, offset1, offset2 in sentence:
             assert dep != "ROOT"
 
             if str(w).lower() not in self.word2vec_index:
                 continue
 
+            # convert word to index
             word_2_index = self.word2vec_index[str(w).lower()]
-
             word_2_index = torch.LongTensor([word_2_index])
 
+            # from index, convert to embedding using word2vec_emb
             word_emb = self.word2vec_emb(word_2_index.to(config.device))
 
             pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).to(config.device))
+
+            dep_emb = None
             if dep is not None:
                 dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
 
@@ -98,9 +102,7 @@ class Net(nn.Module):
             if last_emb is not None:
                 assert last_edge is not None
                 new_edge_embedding = torch.cat([last_emb, last_edge, embedding], dim=1)
-
                 m.append(new_edge_embedding)
-
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
             dep_dir_emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
@@ -116,20 +118,16 @@ class Net(nn.Module):
         return m
 
     def convert_to_batch(self, batch_of_sentence):
+
         m = []
         for sentence in batch_of_sentence:
             t = self.convert_and_pad_single(sentence)
             m.append(t)
 
+        out = None
         try:
             out = torch.cat(m, dim=0)
         except:
-            print("batch of sentence: ", batch_of_sentence)
-            for clgt in m:
-                print(clgt.shape)
-                print(clgt)
-                print()
-
             exit()
         out = out.view(config.BATCH_SIZE, 1, -1)
         return out
@@ -139,7 +137,7 @@ class Net(nn.Module):
 
         # initialize word2vec embedding
         word2vec_dict = data_helper.load_word2vec()
-        self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
+        self.word2vec_emb, self.word2vec_index = dict_to_emb(word2vec_dict)
 
         # initialize e1_offset_dict
         self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
@@ -152,11 +150,11 @@ class Net(nn.Module):
 
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
-        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=False)
+        self.dep_emb = conf_to_emb(self.dep_dict, freeze=False)
 
-        # intialize part-of-speech dict
+        # initialize part-of-speech dict
         self.POS_dict = data_helper.load_label_map('configs/pos_map.txt')
-        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=False)
+        self.POS_emb = conf_to_emb(self.POS_dict, freeze=False)
 
         for filter_size in config.FILTER_SIZES:
             conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
@@ -166,16 +164,12 @@ class Net(nn.Module):
         self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
 
     def forward(self, x):
-        # print("x shape", x.shape)
         z = []
-        # after conv with relu activation [n][1][85*300] -> [n][20][.]
-        # print(x.shape)
 
         for filter_size in config.FILTER_SIZES:
             t = F.relu(getattr(self, 'conv_' + str(filter_size))(x))
             t = F.max_pool1d(t, config.SEQ_LEN - filter_size + 1)
             z.append(t)
-            # after max-pool-over-time [n][20][.] -> [n][20][1]
 
         out = torch.cat(z, dim=1)
 
@@ -193,15 +187,3 @@ if __name__ == "__main__":
     raw_batch = [s['shortest-path'] for s in training_data[:config.BATCH_SIZE]]
     batch = net.convert_to_batch(raw_batch)
     net(batch)
-    '''
-    def count_parameters(model):
-        return sum(p.numel() for p in model.parameters() if p.requires_grad)
-    print(count_parameters(net))
-
-    print(net)
-    loss = nn.CrossEntropyLoss()
-    input = torch.randn(3, 5, requires_grad=True)
-    target = torch.empty(3, dtype=torch.long).random_(5)
-    print(input.shape, target.shape)
-    pass
-    '''

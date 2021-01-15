@@ -38,7 +38,7 @@ def compute_acc(net, original_datas, use_cuda=config.CUDA):
     for i in range(0, len(datas), config.BATCH_SIZE):
         mini_batch = datas[i:i+config.BATCH_SIZE]
         x_batch = [single['shortest-path'] for single in mini_batch]
-        #print(mini_batch)
+
         x_batch = net.convert_to_batch(x_batch)
         if config.CUDA:
             x_batch = x_batch.cuda()
@@ -84,17 +84,20 @@ def compute_acc(net, original_datas, use_cuda=config.CUDA):
 
 if __name__ == "__main__":
     model = Net()
-    checkpoint = torch.load("checkpoints/checkpoint.pth") #, map_location=torch.device('cpu') )
+
+    if config.CUDA:
+        checkpoint = torch.load("checkpoints/checkpoint.pth")
+    else:
+        checkpoint = torch.load("checkpoints/checkpoint.pth", map_location=torch.device('cpu'))
+
     model.load_state_dict(checkpoint['net_state_dict'])
     # optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
     epoch = checkpoint['epoch']
     loss = checkpoint['loss']
     print(epoch, loss)
 
-
     test_data = data_helper.load_training_data(config.TEST_PATH)
     print("len test data", len(test_data))
-    # test_data = data_helper.load_training_data(config.TRAIN_PATH)
 
     print(compute_acc(model, test_data, True))
 
