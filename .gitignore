@@ -4,5 +4,6 @@
 */__pycache__
 *.idea
 *.pkl
+*.pdf 
 data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/temporary_answer_file.txt
 data/SemEval2010_task8_all_data/SemEval2010_task8_scorer-v1.2/temporary_key_file.txt

@@ -38,7 +38,7 @@ class Net(nn.Module):
                 emb.append(onehot)
         emb = torch.FloatTensor(emb)
         emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        #emb = nn.Embedding(len(in_dict)//2,len(in_dict)//2)
+
         return emb
 
 
@@ -61,14 +61,7 @@ class Net(nn.Module):
         half = (final_len * config.WORD_DIM - arr.shape[0])
 
         p = torch.FloatTensor(np.zeros(half)).to(config.device)
-        out_arr = torch.cat([arr,p], dim=0)
-
-        # print("p shape", p.shape)
-        # print("out_arr shape", out_arr.shape)
-        # print(out_arr.shape[0], final_len * config.WORD_DIM)
-
-        #if out_arr.shape[0] != final_len * config.WORD_DIM:
-            #out_arr = torch.cat([out_arr, torch.FloatTensor([0])])
+        out_arr = torch.cat([arr, p], dim=0)
 
         assert(out_arr.shape[0] == final_len * config.WORD_DIM)
         out_arr = out_arr.view(1, out_arr.shape[0])
@@ -76,47 +69,40 @@ class Net(nn.Module):
 
     def convert_and_pad_single(self, sentence):
         m = []
-        #print("sentence: ", sentence)
 
         last_emb = None
         last_edge = None
 
         for w, pos, dep, dep_dir, offset1, offset2 in sentence:
             assert dep != "ROOT"
-            #print(w, pos, dep, offset1, offset2)
+
             if str(w).lower() not in self.word2vec_index:
-                #print("{} not in word2vec".format(w))
                 continue
+
             word_2_index = self.word2vec_index[str(w).lower()]
-            # print(self.word2vec_emb)
+
             word_2_index = torch.LongTensor([word_2_index])
-            # print("word 2 index: ", word_2_index)
+
             word_emb = self.word2vec_emb(word_2_index.to(config.device))
 
             pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).to(config.device))
             if dep is not None:
                 dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
-            
-            #assert self.offset_index(offset1)>=0 and self.offset_index(offset1)<160, offset1
-            #assert self.offset_index(offset2)>=0 and self.offset_index(offset2)<160, offset2
-            
+
             offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).to(config.device))
             offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).to(config.device))
+            
             # concatenate word embedding with POS embedding
             embedding = torch.cat([word_emb, offset1_emb, offset2_emb, pos_emb], dim=1)
 
             if last_emb is not None:
                 assert last_edge is not None
                 new_edge_embedding = torch.cat([last_emb, last_edge, embedding], dim=1)
-                # print(last_emb)
-                # print(last_edge)
-                # print(embedding)
+
                 m.append(new_edge_embedding)
-                #print(new_edge_embedding.shape)
+
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
-            #print("dep dir: ", dep_dir)
-            #print(self.edge_dir_emb(torch.LongTensor([dep_dir])))
             dep_dir_emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
             if dep is not None: # not the last token in setence
                 last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
@@ -126,7 +112,6 @@ class Net(nn.Module):
             m = torch.cat(m, dim=1)
         else:
             m = torch.FloatTensor(np.zeros(config.WORD_DIM)).to(config.device).view(1, config.WORD_DIM)
-        # print(sentence)
         m = self.padded(m, config.SEQ_LEN)
         return m
 
@@ -196,16 +181,11 @@ class Net(nn.Module):
             # after max-pool-over-time [n][20][.] -> [n][20][1]
 
         out = torch.cat(z, dim=1)
-        # print(out.shape)
 
         out = out.view(config.BATCH_SIZE, config.NUM_FILTERS * len(config.FILTER_SIZES))
-        # [n][20*len(FILTER_SIZES)][1] -> [n][20*len(FILTER_SIZES)], needed for nn.Linear
-        # print(out.shape)
 
         out = F.dropout(out, p=0.5, training=self.training)
         out = self.fc(out)
-        # after fc [n][20*len(FILTER_SIZES)] -> [n][config.num_class]
-        # print("output shape: ", out.shape)
         return out
 
 
