@@ -10,63 +10,63 @@ from configs.configuration import config
 from src import data_helper
 
 
+def padded(original_arr, final_len):
+    """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
+    Args:
+        original_arr: numpy array with shape [1, x*WORD_DIM], x MUST be less than or equal to SEQ_LEN.
+        final_len: an integer denoteing the final len after padding
+
+    Returns:
+        arr: padded array
+    """
+    arr = original_arr.view(original_arr.shape[1])
+
+    if arr.shape[0] == final_len * config.WORD_DIM:
+        return arr.view(1, arr.shape[0])
+
+    assert arr.shape[0] < final_len * config.WORD_DIM, "arr shape: {}, final_len: {}, word_dim: {}".format(arr.shape[0],
+                                                                                                           final_len,
+                                                                                                           config.WORD_DIM)
+
+    half = (final_len * config.WORD_DIM - arr.shape[0])
+
+    p = torch.FloatTensor(np.zeros(half)).to(config.device)
+    out_arr = torch.cat([arr, p], dim=0)
+
+    assert (out_arr.shape[0] == final_len * config.WORD_DIM)
+    out_arr = out_arr.view(1, out_arr.shape[0])
+    return out_arr
+
+
+def dict_to_emb(in_dict):
+    key2index = dict()
+    index = 0
+    emb = []
+    for key in in_dict:
+        key2index[key] = index
+        emb.append(in_dict[key])
+        index += 1
+
+    emb = torch.FloatTensor(emb)
+    emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
+    return emb, key2index
+
+
+def conf_to_emb(in_dict, freeze):
+    emb = []
+    for key in in_dict:
+        if type(key) == int:  # need this to filter two-way dict
+            assert len(in_dict) % 2 == 0
+            onehot = np.zeros(len(in_dict) // 2, dtype=float)
+            onehot[key] = 1.
+            emb.append(onehot)
+    emb = torch.FloatTensor(emb)
+    emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
+
+    return emb
+
+
 class Net(nn.Module):
-
-    @staticmethod
-    def dict_to_emb(in_dict):
-        key2index = dict()
-        index = 0
-        emb = []
-        for key in in_dict:
-            key2index[key] = index
-            emb.append(in_dict[key])
-            index += 1
-
-        emb = torch.FloatTensor(emb)
-        # print("word embedding shape: ", emb.shape)
-        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        return emb, key2index
-
-    @staticmethod
-    def conf_to_emb(in_dict, freeze):
-        emb = []
-        for key in in_dict:
-            if type(key) == int: # need this to filter two-way dict
-                assert len(in_dict) % 2 == 0
-                onehot = np.zeros(len(in_dict)//2, dtype=float)
-                onehot[key] = 1.
-                emb.append(onehot)
-        emb = torch.FloatTensor(emb)
-        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-
-        return emb
-
-
-    def padded(self, original_arr, final_len):
-        """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
-        Args:
-            original_arr: numpy array with shape [1, x*WORD_DIM], x MUST be less than or equal to SEQ_LEN.
-            final_len: an integer denoteing the final len after padding
-
-        Returns:
-            arr: padded array
-        """
-        arr = original_arr.view(original_arr.shape[1])
-
-        if arr.shape[0] == final_len * config.WORD_DIM:
-            return arr.view(1, arr.shape[0])
-
-        assert arr.shape[0] < final_len * config.WORD_DIM, "arr shape: {}, final_len: {}, word_dim: {}".format(arr.shape[0],final_len,config.WORD_DIM)
-
-        half = (final_len * config.WORD_DIM - arr.shape[0])
-
-        p = torch.FloatTensor(np.zeros(half)).to(config.device)
-        out_arr = torch.cat([arr, p], dim=0)
-
-        assert(out_arr.shape[0] == final_len * config.WORD_DIM)
-        out_arr = out_arr.view(1, out_arr.shape[0])
-        return out_arr
-
     def convert_and_pad_single(self, sentence):
         m = []
 
@@ -91,7 +91,7 @@ class Net(nn.Module):
 
             offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).to(config.device))
             offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).to(config.device))
-            
+
             # concatenate word embedding with POS embedding
             embedding = torch.cat([word_emb, offset1_emb, offset2_emb, pos_emb], dim=1)
 
@@ -104,7 +104,7 @@ class Net(nn.Module):
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
             dep_dir_emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
-            if dep is not None: # not the last token in setence
+            if dep is not None:  # not the last token in setence
                 last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
                 last_emb = embedding
 
@@ -112,7 +112,7 @@ class Net(nn.Module):
             m = torch.cat(m, dim=1)
         else:
             m = torch.FloatTensor(np.zeros(config.WORD_DIM)).to(config.device).view(1, config.WORD_DIM)
-        m = self.padded(m, config.SEQ_LEN)
+        m = padded(m, config.SEQ_LEN)
         return m
 
     def convert_to_batch(self, batch_of_sentence):
@@ -129,7 +129,7 @@ class Net(nn.Module):
                 print(clgt.shape)
                 print(clgt)
                 print()
-                
+
             exit()
         out = out.view(config.BATCH_SIZE, 1, -1)
         return out
@@ -159,15 +159,12 @@ class Net(nn.Module):
         self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=False)
 
         for filter_size in config.FILTER_SIZES:
-            conv = nn.Conv1d(1,\
-                config.NUM_FILTERS, \
-                filter_size*config.WORD_DIM, \
-                stride=config.WORD_DIM)
+            conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
             # in_channel,out_channel,window_size,stride
             setattr(self, 'conv_' + str(filter_size), conv)
-        
-        self.fc = nn.Linear(len(config.FILTER_SIZES)*config.NUM_FILTERS, config.num_class)
-    
+
+        self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
+
     def forward(self, x):
         # print("x shape", x.shape)
         z = []
@@ -175,8 +172,8 @@ class Net(nn.Module):
         # print(x.shape)
 
         for filter_size in config.FILTER_SIZES:
-            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x)) 
-            t = F.max_pool1d(t, config.SEQ_LEN-filter_size+1)
+            t = F.relu(getattr(self, 'conv_' + str(filter_size))(x))
+            t = F.max_pool1d(t, config.SEQ_LEN - filter_size + 1)
             z.append(t)
             # after max-pool-over-time [n][20][.] -> [n][20][1]
 
