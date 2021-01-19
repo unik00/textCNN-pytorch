@@ -2,7 +2,7 @@ import subprocess
 import torch
 import numpy as np
 
-from src.model.textnet import Net
+from src.model.textnet import TextNet
 from src import data_helper
 from configs.configuration import config
 
