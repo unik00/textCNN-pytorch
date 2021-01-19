@@ -48,9 +48,11 @@ class WordEmb(Emb):
         word2vec_dict = data_helper.load_word2vec()
         self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
 
+    def in_dict(self, w):
+        return str(w).lower() in self.word2vec_index
+
     def forward(self, w):
-        if str(w).lower() not in self.word2vec_index:
-            return None
+        w = str(w).lower()
 
         # convert word to index
         word_2_index = self.word2vec_index[str(w).lower()]
@@ -95,17 +97,17 @@ class EdgeDirectionEmb(Emb):
         self.edge_dir_emb = nn.Embedding(2, 2, max_norm=2)
 
     def forward(self, dep_dir):
-        self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
+        emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
+        return emb
 
 
 class PositionEmb(nn.Module):
-    def __init(self):
+    def __init__(self):
         super(PositionEmb, self).__init__()
-
         # initialize e1_offset_dict
         self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
         self.offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
 
     def forward(self, offset):
-        offset_emb = self.offset_emb(torch.LongTensor([self.offset_index(offset)]).to(config.device))
-        return offset_emb
+        emb = self.offset_emb(torch.LongTensor([self.offset_index(offset)]).to(config.device))
+        return emb

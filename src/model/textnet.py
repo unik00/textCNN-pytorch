@@ -4,25 +4,6 @@ from src.model.emb import *
 
 
 class TextNet(nn.Module):
-    def __init__(self):
-        super(TextNet, self).__init__()
-
-        # embedding layers
-        self.word = WordEmb()
-        self.dep = DependencyEmb()
-        self.part_of_speech = POSEmb()
-        self.offset1 = PositionEmb()
-        self.offset2 = PositionEmb()
-        self.direction = EdgeDirectionEmb()
-
-        # convolution layers
-        for filter_size in config.FILTER_SIZES:
-            conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
-            # in_channel,out_channel,window_size,stride
-            setattr(self, 'conv_' + str(filter_size), conv)
-
-        self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
-
     @staticmethod
     def padded(original_arr, final_len):
         """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
@@ -52,20 +33,40 @@ class TextNet(nn.Module):
         out_arr = out_arr.view(1, out_arr.shape[0])
         return out_arr
 
+    def __init__(self):
+        super(TextNet, self).__init__()
+
+        # embedding layers
+        self.word = WordEmb()
+        self.dep = DependencyEmb()
+        self.part_of_speech = POSEmb()
+        self.offset1 = PositionEmb()
+        self.offset2 = PositionEmb()
+        self.direction = EdgeDirectionEmb()
+
+        # convolution layers
+        for filter_size in config.FILTER_SIZES:
+            conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
+            # in_channel,out_channel,window_size,stride
+            setattr(self, 'conv_' + str(filter_size), conv)
+
+        self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
+
     def convert_and_pad_single(self, sentence):
+        # I don't know how to refactor this method
         m = []
 
         last_emb = None
         last_edge = None
-
         # iterate the sentence
         for w, pos, dep, dep_dir, offset1, offset2 in sentence:
 
-            if str(w).lower() not in self.word2vec_index:
+            # we skip the words which are not in our embedding dictionary
+            if not self.word.in_dict(w):
                 continue
 
             # get word embedding
-            word_emb = self.word(str(w).lower())
+            word_emb = self.word(w)
 
             # get part of speech embedding
             pos_emb = self.part_of_speech(pos)
