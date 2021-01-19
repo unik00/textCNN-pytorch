@@ -11,7 +11,6 @@ def compute_acc(net, original_datas, use_cuda=config.CUDA):
     """ Compute accuracy given model and data
     Args:
         net: Net instance
-        word2vec_model: dict
         original_datas: data for evaluation
 
     Returns:
@@ -83,7 +82,7 @@ def compute_acc(net, original_datas, use_cuda=config.CUDA):
 
 
 if __name__ == "__main__":
-    model = Net()
+    model = TextNet()
 
     if config.CUDA:
         checkpoint = torch.load("checkpoints/checkpoint.pth")

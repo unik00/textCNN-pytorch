@@ -2,6 +2,7 @@ import torch
 from torch import nn
 
 import numpy as np
+import pickle
 
 from configs.configuration import config
 from src import data_helper
@@ -41,11 +42,30 @@ class Emb(nn.Module):
 
 
 class WordEmb(Emb):
+    @staticmethod
+    def load_word2vec():
+        """
+        Returns:
+            model : a dict for mapping word embedding.
+        """
+        def load_obj(name):
+            with open('obj/' + name + '.pkl', 'rb') as f:
+                return pickle.load(f)
+
+        print("Loading word2vec model...")
+
+        # use the slim version in debugging mode for quick loading
+        # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
+        model = load_obj("word2vec_crossed")
+        print("Finished loading")
+
+        return model
+
     def __init__(self):
         super(WordEmb, self).__init__()
 
         # initialize word2vec embedding
-        word2vec_dict = data_helper.load_word2vec()
+        word2vec_dict = self.load_word2vec()
         self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
 
     def in_dict(self, w):

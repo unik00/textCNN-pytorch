@@ -4,25 +4,6 @@ from configs.configuration import config
 from src import dependency_tree
 
 
-def load_word2vec():
-    """
-    Returns:
-        model : a dict for mapping word embedding.
-    """
-    def load_obj(name):
-        with open('obj/' + name + '.pkl', 'rb') as f:
-            return pickle.load(f)
-
-    print("Loading word2vec model...")
-
-    # use the slim version in debugging mode for quick loading
-    # model = KeyedVectors.load_word2vec_format('data/GoogleNews-vectors-negative300-SLIM.bin', binary=True)
-    model = load_obj("word2vec_crossed")
-    print("Finished loading")
-
-    return model
-
-
 def load_offsetdict(type):
     """
     Params:

@@ -1,6 +1,7 @@
 import torch
 
-class Config():
+
+class Config:
     def __init__(self):
         self.num_class = 19
         self.pos_types = 18
@@ -44,5 +45,6 @@ class Config():
         self.DEV_PATH = "data/SemEval2010_task8_all_data/SemEval2010_task8_training/DEV_FILE.TXT"
 
         self.NO_VAL_SET = True
+
 
 config = Config()
