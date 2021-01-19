@@ -3,7 +3,7 @@ import torch
 from torch import nn, optim
 
 from src import data_helper
-from src.model.textnet import Net
+from src.model.textnet import TextNet
 from src.test import compute_acc
 from configs.configuration import config
 
@@ -97,13 +97,13 @@ def main():
 
             cv_score += train(training_data[:left]+training_data[right:],
                               training_data[left:right],
-                              Net(),
+                              TextNet(),
                               config.CHECKPOINT_PATH + ".fold{}".format(i+1))
         cv_score /= 5
         print("Final CV score: {}".format(cv_score))
     else:
         val_data = data_helper.load_training_data(config.TEST_PATH)
-        train(training_data, val_data, Net(), config.CHECKPOINT_PATH)
+        train(training_data, val_data, TextNet(), config.CHECKPOINT_PATH)
 
 
 if __name__ == "__main__":
