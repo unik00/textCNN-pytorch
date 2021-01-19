@@ -1,19 +1,21 @@
-import random
-
-import torch
 import torch.nn.functional as F
-from torch import nn
 
-import numpy as np
-
-from configs.configuration import config
-from src import data_helper
+from src.model.emb import *
 
 
 class TextNet(nn.Module):
     def __init__(self):
         super(TextNet, self).__init__()
 
+        # embedding layers
+        self.word = WordEmb()
+        self.dep = DependencyEmb()
+        self.part_of_speech = POSEmb()
+        self.offset1 = PositionEmb()
+        self.offset2 = PositionEmb()
+        self.direction = EdgeDirectionEmb()
+
+        # convolution layers
         for filter_size in config.FILTER_SIZES:
             conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
             # in_channel,out_channel,window_size,stride
@@ -58,26 +60,23 @@ class TextNet(nn.Module):
 
         # iterate the sentence
         for w, pos, dep, dep_dir, offset1, offset2 in sentence:
-            assert dep != "ROOT"
 
             if str(w).lower() not in self.word2vec_index:
                 continue
 
-            # convert word to index
-            word_2_index = self.word2vec_index[str(w).lower()]
-            word_2_index = torch.LongTensor([word_2_index])
+            # get word embedding
+            word_emb = self.word(str(w).lower())
 
-            # from index, convert to embedding using word2vec_emb
-            word_emb = self.word2vec_emb(word_2_index.to(config.device))
+            # get part of speech embedding
+            pos_emb = self.part_of_speech(pos)
 
-            pos_emb = self.POS_emb(torch.LongTensor([self.POS_dict[pos]]).to(config.device))
+            # get offset embedding
+            offset1_emb = self.offset1(offset1)
+            offset2_emb = self.offset2(offset2)
 
             dep_emb = None
             if dep is not None:
-                dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
-
-            offset1_emb = self.e1_offset_emb(torch.LongTensor([self.offset_index(offset1)]).to(config.device))
-            offset2_emb = self.e2_offset_emb(torch.LongTensor([self.offset_index(offset2)]).to(config.device))
+                dep_emb = self.dep(dep)
 
             # concatenate word embedding with POS embedding
             embedding = torch.cat([word_emb, offset1_emb, offset2_emb, pos_emb], dim=1)
@@ -88,8 +87,8 @@ class TextNet(nn.Module):
                 m.append(new_edge_embedding)
                 assert new_edge_embedding.shape[1] == config.WORD_DIM
 
-            dep_dir_emb = self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
-            if dep is not None:  # not the last token in setence
+            dep_dir_emb = self.direction(dep_dir)
+            if dep is not None:  # not the last token in sentence
                 last_edge = torch.cat([dep_emb, dep_dir_emb], dim=1)
                 last_emb = embedding
 

@@ -1,5 +1,4 @@
 import torch
-import torch.nn.functional as F
 from torch import nn
 
 import numpy as np
@@ -76,14 +75,27 @@ class POSEmb(Emb):
         return pos_emb
 
 
-class EdgeEmb(Emb):
+class DependencyEmb(Emb):
     def __init__(self):
-        super(EdgeEmb, self).__init__()
-        self.edge_dir_emb = nn.Embedding(2, 2, max_norm=2)
-
+        super(DependencyEmb, self).__init__()
         # initialize relation dependency dict
         self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
         self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=False)
+
+    def forward(self, dep):
+        assert dep != "ROOT"
+
+        dep_emb = self.dep_emb(torch.LongTensor([self.dep_dict[dep]]).to(config.device))
+        return dep_emb
+
+
+class EdgeDirectionEmb(Emb):
+    def __init__(self):
+        super(EdgeDirectionEmb, self).__init__()
+        self.edge_dir_emb = nn.Embedding(2, 2, max_norm=2)
+
+    def forward(self, dep_dir):
+        self.edge_dir_emb(torch.LongTensor([dep_dir]).to(config.device)).view(1, 2)
 
 
 class PositionEmb(nn.Module):
@@ -92,7 +104,8 @@ class PositionEmb(nn.Module):
 
         # initialize e1_offset_dict
         self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
-        self.e1_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
+        self.offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
 
-        # initialize e2_offset_dict
-        self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
+    def forward(self, offset):
+        offset_emb = self.offset_emb(torch.LongTensor([self.offset_index(offset)]).to(config.device))
+        return offset_emb
