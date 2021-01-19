@@ -211,31 +211,4 @@ if __name__ == "__main__":
     training_data = load_training_data(config.TEST_PATH)
     print(training_data)
 
-    '''
-    model = load_word2vec()
 
-
-    print(off1_dict)
-    print("---")
-    print(off2_dict)
-    for key in off1_dict:
-        off1_dict[key] = np.random.randn(config.POSITION_DIM)
-
-    for key in off2_dict:
-        off2_dict[key] = np.random.randn(config.POSITION_DIM)
-
-
-    def save_obj(obj, name):
-        with open('obj/' + name + '.pkl', 'wb') as f:
-            pickle.dump(obj, f, 3)
-
-
-    print(off1_dict)
-    print(off2_dict)
-    save_obj(off1_dict, "pos1_emb")
-    save_obj(off2_dict, "pos2_emb")
-
-    print("Number of class: ", config.num_class)
-    print("Total training data: {}".format(len(training_data)))
-
-    '''

@@ -2,7 +2,7 @@ import random
 
 import torch
 import torch.nn.functional as F
-from torch import nn, optim
+from torch import nn
 
 import numpy as np
 
@@ -11,6 +11,16 @@ from src import data_helper
 
 
 class TextNet(nn.Module):
+    def __init__(self):
+        super(TextNet, self).__init__()
+
+        for filter_size in config.FILTER_SIZES:
+            conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
+            # in_channel,out_channel,window_size,stride
+            setattr(self, 'conv_' + str(filter_size), conv)
+
+        self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
+
     @staticmethod
     def padded(original_arr, final_len):
         """ Center padding a [x*WORD_DIM] array to shape[SEQ_LEN*WORD_DIM] with zeros
@@ -39,34 +49,6 @@ class TextNet(nn.Module):
         assert (out_arr.shape[0] == final_len * config.WORD_DIM)
         out_arr = out_arr.view(1, out_arr.shape[0])
         return out_arr
-
-    @staticmethod
-    def dict_to_emb(in_dict):
-        key2index = dict()
-        index = 0
-        emb = []
-        for key in in_dict:
-            key2index[key] = index
-            emb.append(in_dict[key])
-            index += 1
-
-        emb = torch.FloatTensor(emb)
-        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-        return emb, key2index
-
-    @staticmethod
-    def conf_to_emb(in_dict, freeze):
-        emb = []
-        for key in in_dict:
-            if type(key) == int:  # need this to filter two-way dict
-                assert len(in_dict) % 2 == 0
-                onehot = np.zeros(len(in_dict) // 2, dtype=float)
-                onehot[key] = 1.
-                emb.append(onehot)
-        emb = torch.FloatTensor(emb)
-        emb = nn.Embedding.from_pretrained(embeddings=emb, freeze=False)
-
-        return emb
 
     def convert_and_pad_single(self, sentence):
         m = []
@@ -131,37 +113,6 @@ class TextNet(nn.Module):
             exit()
         out = out.view(config.BATCH_SIZE, 1, -1)
         return out
-
-    def __init__(self):
-        super(TextNet, self).__init__()
-
-        # initialize word2vec embedding
-        word2vec_dict = data_helper.load_word2vec()
-        self.word2vec_emb, self.word2vec_index = self.dict_to_emb(word2vec_dict)
-
-        # initialize e1_offset_dict
-        self.offset_index = lambda x: x + config.MAX_ABS_OFFSET
-        self.e1_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
-
-        # initialize e2_offset_dict
-        self.e2_offset_emb = nn.Embedding(config.MAX_ABS_OFFSET * 2, config.POSITION_DIM, max_norm=2)
-
-        self.edge_dir_emb = nn.Embedding(2, 2, max_norm=2)
-
-        # initialize relation dependency dict
-        self.dep_dict = data_helper.load_label_map('configs/dep_map.txt')
-        self.dep_emb = self.conf_to_emb(self.dep_dict, freeze=False)
-
-        # initialize part-of-speech dict
-        self.POS_dict = data_helper.load_label_map('configs/pos_map.txt')
-        self.POS_emb = self.conf_to_emb(self.POS_dict, freeze=False)
-
-        for filter_size in config.FILTER_SIZES:
-            conv = nn.Conv1d(1, config.NUM_FILTERS, filter_size * config.WORD_DIM, stride=config.WORD_DIM)
-            # in_channel,out_channel,window_size,stride
-            setattr(self, 'conv_' + str(filter_size), conv)
-
-        self.fc = nn.Linear(len(config.FILTER_SIZES) * config.NUM_FILTERS, config.num_class)
 
     def forward(self, x):
         z = []
